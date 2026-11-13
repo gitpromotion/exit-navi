@@ -40,6 +40,20 @@ select,.seg button{font:inherit;font-size:15px;border:1px solid var(--line);back
 .cmp b{color:var(--ink)}
 .qr{margin-top:18px;font-size:13px;color:var(--ink2);border-top:1px solid var(--line);padding-top:14px}
 .qr code{background:var(--soft);padding:2px 6px;border-radius:6px}
+.annhead{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:16px}
+.lseg{display:inline-flex;background:var(--soft);border-radius:8px;padding:2px;gap:2px}
+.lseg button{font:inherit;border:0;background:transparent;font-size:12px;padding:4px 9px;cursor:pointer;border-radius:6px;color:var(--ink)}
+.lseg button.on{background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.12);font-weight:700}
+.say{font:inherit;font-size:13px;border:1px solid #b5d0f5;background:#fff;color:#123e73;border-radius:8px;padding:4px 10px;cursor:pointer;margin-left:auto}
+.ann{margin-top:8px}
+.home{margin-top:18px;border:1px solid var(--line);border-radius:14px;padding:16px}
+.home h4{margin:0 0 10px;font-size:15px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.home h4 input{font:inherit;font-size:13px;border:1px solid var(--line);border-radius:8px;padding:3px 6px;margin-left:auto}
+.home h4 label{font-size:12px;font-weight:400;color:var(--ink2);margin-left:auto}
+.trip{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center}
+.trip div{background:var(--soft);border-radius:10px;padding:10px 6px;font-size:12px;color:var(--ink2)}
+.trip b{display:block;font-size:19px;color:var(--ink);font-variant-numeric:tabular-nums}
+.home p{font-size:13px;color:var(--ink2);margin:10px 0 0;line-height:1.7}
 @media(max-width:900px){.app{grid-template-columns:1fr}.mapbox{position:static}}
 </style>
 </head>
@@ -72,7 +86,8 @@ select,.seg button{font:inherit;font-size:15px;border:1px solid var(--line);back
 <script src="js/data2.js"></script>
 <script src="js/common.js"></script>
 <script>
-var state = { z: null, f: 2000 };
+var state = { z: null, f: 2000, lang: 'ko', end: '21:30' };
+function clock(base, add) { var p = base.split(':'), m = +p[0] * 60 + +p[1] + Math.round(add); m = (m + 1440) % 1440; return String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0'); }
 var sel = document.getElementById('zsel');
 Z.forEach(function (z) { var o = document.createElement('option'); o.value = z.id; o.textContent = (z.ring ? '2층 ' : '1층 ') + z.id + '구역'; sel.appendChild(o); });
 sel.onchange = function () { pick(sel.value ? +sel.value : null); };
@@ -109,8 +124,24 @@ function render() {
     '<div class="cmp">지금처럼 나가면 <b>' + c.gate + ' ' + doorName(c.door) + '</b> 앞 줄이 약 <b>' + fmt(c.queue) + '명</b>(' + losName(c.queue) + ')이라 줄에서만 약 ' + c.wait.toFixed(1) + '분을 기다려요.<br>' +
       'EXIT NAVI 안내대로 ' + (changed ? '<b>' + n.gate + ' ' + doorName(n.door) + '</b>(으)로 나가면' : '같은 출구로 ' + (n.delay ? n.delay + '분 늦게 ' : '') + '나가면') +
       ' 줄은 약 <b>' + fmt(n.queue) + '명</b>(' + losName(n.queue) + '), 줄 대기 약 ' + n.wait.toFixed(1) + '분이에요.</div>' +
-    '<div class="ann">📢 ' + (n.delay ? '[' + n.delay + '분 뒤] ' : '[종료 직후] ') + zz.id + '구역 관객 여러분, ' + n.gate + ' 방향 출구로 퇴장해 주세요.' + (n.delay ? ' 그전까지는 자리에서 잠시 기다려 주세요.' : '') + '</div>' +
+    '<div class="annhead"><b style="font-size:14px">📢 안내 방송</b><span class="lseg" id="lseg">' + Object.keys(LANGS).map(function (k) { return '<button data-l="' + k + '"' + (k === state.lang ? ' class="on"' : '') + '>' + LANGS[k].name + '</button>'; }).join('') + '</span><button class="say" id="say">🔊 듣기</button></div>' +
+    '<div class="ann">' + zoneLine(zz.id, n.gate, n.delay, state.lang, false) + '</div>' +
+    homeCard(zz, n, c) +
     '<div class="qr">좌석 QR 코드에 <code>find.html#z=' + zz.id + '</code> 주소를 넣으면 관객이 찍자마자 이 화면을 볼 수 있어요.<br>시간은 구역 관객 중 가운데 사람 기준 예상치이며, 시뮬레이션 결과입니다.</div>';
+  box.querySelectorAll('#lseg button').forEach(function (b) { b.onclick = function () { state.lang = b.dataset.l; stopSpeak(); render(); }; });
+  box.querySelector('#say').onclick = function () { speak(zoneLine(zz.id, n.gate, n.delay, state.lang, true), state.lang); };
+  box.querySelector('#endt').onchange = function (e) { if (e.target.value) { state.end = e.target.value; render(); } };
+}
+function homeCard(zz, n, c) {
+  var tn = 4 + n.total, tc = 4 + c.total, kN = keyOf('P4', state.f), kC = keyOf('P0', state.f);
+  var aN = stationCurve(kN, 60), aC = stationCurve(kC, 60), sN = Math.round(tn + STATION.walk), sC = Math.round(tc + STATION.walk);
+  var crowdN = aN[Math.min(sN, 59)], crowdC = aC[Math.min(sC, 59)];
+  return '<div class="home"><h4>🚇 귀갓길 — 올림픽공원역 (5·9호선)<label>공연 종료 <input type="time" id="endt" value="' + state.end + '"></label></h4>' +
+    '<div class="trip"><div>건물 밖<b>' + clock(state.end, tn) + '</b>종료 후 약 ' + Math.round(tn) + '분</div>' +
+    '<div>역 도착<b>' + clock(state.end, tn + STATION.walk) + '</b>도보 약 ' + STATION.walk + '분</div>' +
+    '<div>그 시각 역 도착 관객<b>' + fmt(crowdN) + '명/분</b>지금처럼이면 ' + fmt(crowdC) + '명/분</div></div>' +
+    '<p>지금처럼 나가면 ' + clock(state.end, tc + STATION.walk) + '쯤 역에 도착해요. EXIT NAVI 안내대로면 <b>' + (tc - tn >= 0.5 ? '약 ' + Math.round(tc - tn) + '분 일찍' : '비슷한 시각에') + '</b> 도착해요. ' + (crowdN > 400 ? '이 시각에는 역이 붐비니 개찰구에서 여유를 두세요.' : '') + '<br>' +
+    '<span style="color:var(--ink3)">공연 후 지하철 이용 관객의 95%가 올림픽공원역(9호선 70%, 5호선 25%)을 이용해요 (2025 승하차 데이터). 실시간 열차 도착 정보와 연동하면 탈 수 있는 열차까지 안내할 수 있어요.</span></p></div>';
 }
 var m = location.hash.match(/z=(\d+)/); if (m && +m[1] >= 1 && +m[1] <= 52) state.z = +m[1];
 sel.value = state.z || ''; render();

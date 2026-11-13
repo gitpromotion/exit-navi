@@ -32,7 +32,7 @@ function estimate(k, zid) {
   return { door: door, di: di, gate: DOORS[di].gate, delay: dl, walk: walk, wait: wait, total: dl + walk + wait, queue: qAt(k, di, Math.min(t, D.tmax)) };
 }
 function announcements(k) {
-  var S = sc(k), groups = {};
+  var S = typeof k === 'string' ? sc(k) : k, groups = {};
   Z.forEach(function (z) {
     var dl = S.delay[z.id] || 0, g = DOORS[doorIdx[S.assign[z.id]]].gate;
     groups[dl] = groups[dl] || {}; (groups[dl][g] = groups[dl][g] || []).push(z.id);
@@ -57,8 +57,8 @@ function routePath(z, door) {
   return 'M' + s + 'L' + m + 'A' + R_CONC + ',' + R_CONC + ' 0 0 ' + (d > 0 ? 0 : 1) + ' ' + e + 'L' + f;
 }
 function drawMap(svg, opt) {
-  // opt: {key, selected, onPick, showDelay}
-  var S = sc(opt.key), h = '';
+  // opt: {key, S, selected, onPick, showDelay, closed}
+  var S = opt.S || sc(opt.key), h = '';
   h += '<circle r="74" fill="#f3f2ee"/>';
   h += '<circle r="' + R_CONC + '" fill="none" stroke="#dcdbd5" stroke-width="2.4"/>';
   h += '<circle r="22" fill="#ebeae5"/>';
@@ -79,7 +79,10 @@ function drawMap(svg, opt) {
   var gates = {};
   DOORS.forEach(function (d, i) {
     var p = pt(R_DOOR, d.ang), on = opt.selected && S.assign[opt.selected] === d.id;
-    h += '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="' + (on ? 3.1 : 2.2) + '" fill="' + GATE[d.gate] + '" stroke="#fff" stroke-width="0.8"/>';
+    if (opt.closed === d.id) {
+      h += '<circle class="door" data-d="' + d.id + '" cx="' + p[0] + '" cy="' + p[1] + '" r="3.4" fill="#e34948" stroke="#fff" stroke-width="0.8"/>' +
+        '<path d="M' + (p[0] - 1.6) + ',' + (p[1] - 1.6) + 'L' + (p[0] + 1.6) + ',' + (p[1] + 1.6) + 'M' + (p[0] + 1.6) + ',' + (p[1] - 1.6) + 'L' + (p[0] - 1.6) + ',' + (p[1] + 1.6) + '" stroke="#fff" stroke-width="0.9" stroke-linecap="round" pointer-events="none"/>';
+    } else h += '<circle class="door" data-d="' + d.id + '" cx="' + p[0] + '" cy="' + p[1] + '" r="' + (on ? 3.1 : 2.2) + '" fill="' + GATE[d.gate] + '" stroke="#fff" stroke-width="0.8"/>';
     var q = pt(R_DOOR + 5.2, d.ang); h += '<text x="' + q[0] + '" y="' + (q[1] + 1.2) + '" class="lb dn">' + doorName(d.id) + '</text>';
     (gates[d.gate] = gates[d.gate] || []).push(d.ang);
   });
@@ -91,4 +94,74 @@ function drawMap(svg, opt) {
   if (opt.onPick) svg.querySelectorAll('.z').forEach(function (el) {
     el.addEventListener('click', function () { opt.onPick(+el.getAttribute('data-z')); });
   });
+  if (opt.onDoor) svg.querySelectorAll('.door').forEach(function (el) {
+    el.style.cursor = 'pointer'; el.addEventListener('click', function () { opt.onDoor(el.getAttribute('data-d')); });
+  });
 }
+
+// ---------- 지하철 (2025 승하차 데이터 분석 결과) ----------
+// 공연 후 초과 승차 비중: 9호선 올림픽공원 69.7%, 5호선 올림픽공원 24.9%, 방이·몽촌토성·한성백제 합계 5.4%
+var STATION = { subway: D.subway_share, olympic: 0.946, walk: D.walk_station,
+  lines: [['9호선 올림픽공원역', 0.697], ['5호선 올림픽공원역', 0.249], ['방이·몽촌토성·한성백제역', 0.054]] };
+// 올림픽공원역(5·9호선)에 1분마다 도착하는 관객 수 (건물 밖 유출 × 지하철 이용 47% × 올림픽공원역 94.6%, 도보 walk분 뒤)
+function stationCurve(k, len) {
+  len = len || 40; var o = sc(k).out, a = new Array(len).fill(0);
+  for (var t = 0; t < o.length; t++) { var m = t + STATION.walk; if (m < len) a[m] += o[t].reduce(function (s, v) { return s + v; }, 0) * STATION.subway * STATION.olympic; }
+  return a;
+}
+
+// ---------- 다국어 안내 ----------
+var LANGS = { ko: { name: '한국어', tts: 'ko-KR' }, en: { name: 'English', tts: 'en-US' }, ja: { name: '日本語', tts: 'ja-JP' }, zh: { name: '中文', tts: 'zh-CN' } };
+function rangesL(arr, lang, speech) {
+  var to = speech ? { ko: '에서 ', en: ' to ', ja: 'から', zh: '至' }[lang] : (lang === 'en' ? '–' : '~');
+  var sep = { ko: '·', en: ', ', ja: '・', zh: '、' }[lang]; if (speech && lang === 'ko') sep = ', ';
+  return ranges(arr).split('·').map(function (r) { return r.replace('~', to); }).join(sep);
+}
+function gateL(g, lang) { var n = g.replace('문', ''); return { ko: g, en: 'Gate ' + n, ja: n + 'ゲート', zh: n + '号门' }[lang]; }
+function zonesL(z, lang, sp) { var r = rangesL(z, lang, sp); return { ko: r + '구역', en: (z.length > 1 ? 'Sections ' : 'Section ') + r, ja: r + 'ブロック', zh: r + '区' }[lang]; }
+function whenL(t, lang) {
+  return t === 0 ? { ko: '[종료 직후]', en: '[Right after the show]', ja: '[終演直後]', zh: '[演出结束后]' }[lang]
+    : { ko: '[' + t + '분 뒤]', en: '[In ' + t + ' minutes]', ja: '[' + t + '分後]', zh: '[' + t + '分钟后]' }[lang];
+}
+// parts: [{gate, zones:[...]}]
+function annLine(t, parts, lang, speech) {
+  var p = parts.map(function (x) { return { z: zonesL(x.zones, lang, speech), g: gateL(x.gate, lang) }; });
+  var s;
+  if (lang === 'ko') s = p.map(function (x) { return x.z + '은 ' + x.g; }).join(', ') + '으로 퇴장해 주세요.' + (t === 0 ? ' 나머지 구역은 잠시 자리에서 기다려 주세요.' : '');
+  if (lang === 'en') s = p.map(function (x) { return x.z + ', please exit via ' + x.g; }).join('. ') + '.' + (t === 0 ? ' All other sections, please remain seated for a moment.' : '');
+  if (lang === 'ja') s = p.map(function (x) { return x.z + 'は' + x.g; }).join('、') + 'からご退場ください。' + (t === 0 ? 'その他のブロックの方は、しばらくお席でお待ちください。' : '');
+  if (lang === 'zh') s = p.map(function (x) { return x.z + '请从' + x.g + '退场'; }).join('，') + '。' + (t === 0 ? '其他区域的观众请在座位上稍候。' : '');
+  return speech ? s : whenL(t, lang) + ' ' + s;
+}
+function zoneLine(z, gate, t, lang, speech) {
+  var g = gateL(gate, lang), w = speech ? '' : whenL(t, lang) + ' ';
+  if (lang === 'ko') return w + z + '구역 관객 여러분, ' + (t ? t + '분 뒤에 ' : '') + g + ' 방향 출구로 퇴장해 주세요.' + (t ? ' 그전까지는 자리에서 잠시 기다려 주세요.' : '');
+  if (lang === 'en') return w + 'Section ' + z + ', please ' + (t ? 'wait in your seats, then in ' + t + ' minutes ' : '') + 'exit via ' + g + '.';
+  if (lang === 'ja') return w + z + 'ブロックの皆さま、' + (t ? t + '分後に' : '') + g + 'からご退場ください。' + (t ? 'それまでお席でお待ちください。' : '');
+  if (lang === 'zh') return w + z + '区的观众，请' + (t ? '在座位上稍候，' + t + '分钟后' : '') + '从' + g + '退场。';
+}
+function closedLine(doorId, lang) {
+  var d = DOORS[doorIdx[doorId]], g = gateL(d.gate, lang), n = doorName(doorId);
+  return { ko: '[비상 안내] ' + d.gate + ' ' + n + ' 출구가 폐쇄되었습니다. 안내에 따라 다른 출구를 이용해 주세요.',
+    en: '[Emergency notice] ' + g + ' door ' + n + ' is closed. Please follow the guidance to another exit.',
+    ja: '[緊急のご案内] ' + g + ' ' + n + '出口は閉鎖されています。案内に従って別の出口をご利用ください。',
+    zh: '[紧急通知] ' + g + ' ' + n + '出口已关闭，请按照指引使用其他出口。' }[lang];
+}
+
+// ---------- 음성 방송 (브라우저 내장 음성 합성) ----------
+var TTS = window.speechSynthesis || null;
+function ttsOK() { return !!TTS; }
+function speak(texts, lang, onend) {
+  if (!TTS) { alert('이 브라우저는 음성 방송을 지원하지 않아요. 크롬이나 엣지에서 열어 주세요.'); return; }
+  TTS.cancel(); if (!Array.isArray(texts)) texts = [texts];
+  var code = LANGS[lang].tts, voices = TTS.getVoices();
+  var v = voices.filter(function (x) { return x.lang && x.lang.replace('_', '-').toLowerCase().indexOf(code.slice(0, 2).toLowerCase()) === 0; });
+  var pref = v.filter(function (x) { return /google|microsoft|natural|online/i.test(x.name); })[0] || v[0];
+  texts.forEach(function (t, i) {
+    var u = new SpeechSynthesisUtterance(t.replace(/[\[\]]/g, ' ')); u.lang = code; if (pref) u.voice = pref; u.rate = lang === 'en' ? 0.95 : 1;
+    if (i === texts.length - 1 && onend) u.onend = onend;
+    TTS.speak(u);
+  });
+}
+function stopSpeak() { if (TTS) TTS.cancel(); }
+if (TTS) TTS.getVoices();
