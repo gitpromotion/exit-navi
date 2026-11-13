@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>내 구역 출구 찾기 · EXIT NAVI</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
+<link rel="stylesheet" href="css/site.css">
+<style>
+.app{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(320px,.9fr);gap:22px;align-items:start;padding:28px 0 64px}
+.mapbox{background:#fff;border:1px solid var(--line);border-radius:18px;padding:12px;position:sticky;top:76px}
+.mapbox svg{width:100%;height:auto;display:block;touch-action:manipulation}
+.z{cursor:pointer;transition:opacity .15s}.z:hover{opacity:.8}
+.lb{text-anchor:middle;font-family:'Noto Sans KR',sans-serif;pointer-events:none}
+.lb.zn{font-size:3.3px;font-weight:700;fill:#0b0b0b}.lb.dl{font-size:2.3px;fill:#0b0b0b}.lb.w{fill:#fff}
+.lb.dn{font-size:2.8px;fill:#52514e}.lb.gt{font-size:3.6px;font-weight:900}.lb.s{font-size:3px;fill:#8a8983}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:13px;color:var(--ink2);padding:8px 6px 2px}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.ctrl{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:16px}
+.ctrl label{font-size:13px;color:var(--ink2);font-weight:700}
+select,.seg button{font:inherit;font-size:15px;border:1px solid var(--line);background:#fff;border-radius:10px;padding:8px 12px;color:var(--ink)}
+.seg{display:inline-flex;background:var(--soft);border-radius:10px;padding:3px;gap:2px}
+.seg button{border:0;background:transparent;font-size:14px;padding:6px 12px;cursor:pointer}
+.seg button.on{background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.12);font-weight:700}
+.res{background:#fff;border:1px solid var(--line);border-radius:18px;padding:24px}
+.res .empty{color:var(--ink2);text-align:center;padding:40px 10px}
+.res .zone{font-size:14px;color:var(--ink2);font-weight:700}
+.res .exit{font-size:clamp(34px,4vw,46px);font-weight:900;letter-spacing:-1px;line-height:1.15;margin:4px 0 2px}
+.res .when{display:inline-block;margin-top:8px;padding:6px 12px;border-radius:999px;font-weight:700;font-size:15px}
+.rows{margin:22px 0 6px;display:grid;gap:10px}
+.row{display:grid;grid-template-columns:96px 1fr 64px;gap:10px;align-items:center;font-size:14px}
+.row .bar{height:22px;background:var(--soft);border-radius:6px;overflow:hidden;display:flex}
+.row .bar span{display:block;height:100%}
+.row .bar span+span{border-left:2px solid #fff}
+.row b{text-align:right;font-variant-numeric:tabular-nums}
+.keys{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--ink2);margin-bottom:6px}
+.keys i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px}
+.ann{background:#eaf2fd;border:1px solid #b5d0f5;color:#123e73;border-radius:12px;padding:12px 14px;font-size:15px;margin-top:16px}
+.cmp{font-size:14px;color:var(--ink2);margin-top:14px;line-height:1.8}
+.cmp b{color:var(--ink)}
+.qr{margin-top:18px;font-size:13px;color:var(--ink2);border-top:1px solid var(--line);padding-top:14px}
+.qr code{background:var(--soft);padding:2px 6px;border-radius:6px}
+@media(max-width:900px){.app{grid-template-columns:1fr}.mapbox{position:static}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div style="padding-top:36px">
+    <p class="eyebrow">관객용</p>
+    <h2 class="t" style="margin-bottom:6px">내 구역 출구 찾기</h2>
+    <p class="lead" style="margin-bottom:0">좌석 구역을 누르거나 고르면, 어느 출구로 언제 나가면 덜 기다리는지 알려 드려요.</p>
+  </div>
+  <div class="app">
+    <div class="mapbox">
+      <svg id="map" viewBox="-87 -87 174 174" role="img" aria-label="KSPO DOME 구역 지도"></svg>
+      <div class="legend">
+        <span><i style="background:#6250d6"></i>2-1문</span><span><i style="background:#2a78d6"></i>2-2문</span><span><i style="background:#d55181"></i>2-3문</span>
+        <span>연한 색 = 잠시 기다렸다 출발</span>
+      </div>
+    </div>
+    <div>
+      <div class="ctrl">
+        <label for="zsel">내 구역</label>
+        <select id="zsel"><option value="">구역 선택</option></select>
+        <label>플로어 관객</label>
+        <div class="seg" id="floor"><button data-f="0">없음</button><button data-f="2000" class="on">2,000명</button><button data-f="4000">4,000명</button></div>
+      </div>
+      <div class="res" id="res"><div class="empty">지도에서 내 좌석 구역을 눌러 주세요.<br><small>예: 1층 18구역, 2층 47구역</small></div></div>
+    </div>
+  </div>
+</div>
+<script src="js/data2.js"></script>
+<script src="js/common.js"></script>
+<script>
+var state = { z: null, f: 2000 };
+var sel = document.getElementById('zsel');
+Z.forEach(function (z) { var o = document.createElement('option'); o.value = z.id; o.textContent = (z.ring ? '2층 ' : '1층 ') + z.id + '구역'; sel.appendChild(o); });
+sel.onchange = function () { pick(sel.value ? +sel.value : null); };
+document.querySelectorAll('#floor button').forEach(function (b) {
+  b.onclick = function () { state.f = +b.dataset.f; document.querySelectorAll('#floor button').forEach(function (x) { x.classList.toggle('on', x === b); }); render(); };
+});
+function pick(z) { state.z = z; sel.value = z || ''; if (z) history.replaceState(null, '', '#z=' + z); render(); }
+
+function render() {
+  var kN = keyOf('P4', state.f), kC = keyOf('P0', state.f);
+  drawMap(document.getElementById('map'), { key: kN, selected: state.z, onPick: pick, showDelay: true });
+  var box = document.getElementById('res');
+  if (!state.z) { box.innerHTML = '<div class="empty">지도에서 내 좌석 구역을 눌러 주세요.<br><small>예: 1층 18구역, 2층 47구역</small></div>'; return; }
+  var zz = Z.filter(function (z) { return z.id === state.z; })[0];
+  var n = estimate(kN, state.z), c = estimate(kC, state.z), col = GATE[n.gate];
+  var max = Math.max(n.total, c.total, 1);
+  function bar(e) {
+    return '<div class="bar">' +
+      (e.delay ? '<span style="width:' + (e.delay / max * 100) + '%;background:#c3c2b7"></span>' : '') +
+      '<span style="width:' + (e.walk / max * 100) + '%;background:#8a8983"></span>' +
+      '<span style="width:' + (e.wait / max * 100) + '%;background:' + losColor(e.queue) + '"></span></div>';
+  }
+  var when = n.delay ? '공연 종료 ' + n.delay + '분 뒤 출발' : '공연 종료 직후 바로 출발';
+  var changed = n.door !== c.door;
+  box.innerHTML =
+    '<div class="zone">' + (zz.ring ? '2층' : '1층') + ' ' + zz.id + '구역 · 좌석 ' + zz.seats + '석</div>' +
+    '<div class="exit" style="color:' + col + '">' + n.gate + ' <span style="color:var(--ink)">' + doorName(n.door) + '</span></div>' +
+    '<div class="when" style="background:' + mix(col, 0.85) + ';color:' + col + '">' + when + '</div>' +
+    '<div class="rows">' +
+      '<div class="keys"><span><i style="background:#c3c2b7"></i>자리에서 대기</span><span><i style="background:#8a8983"></i>걷기</span><span><i style="background:#1baf7a"></i>출구 줄 (색 = 혼잡도)</span></div>' +
+      '<div class="row"><span>지금처럼</span>' + bar(c) + '<b>' + c.total.toFixed(1) + '분</b></div>' +
+      '<div class="row"><span><b style="text-align:left">EXIT NAVI</b></span>' + bar(n) + '<b>' + n.total.toFixed(1) + '분</b></div>' +
+    '</div>' +
+    '<div class="cmp">지금처럼 나가면 <b>' + c.gate + ' ' + doorName(c.door) + '</b> 앞 줄이 약 <b>' + fmt(c.queue) + '명</b>(' + losName(c.queue) + ')이라 줄에서만 약 ' + c.wait.toFixed(1) + '분을 기다려요.<br>' +
+      'EXIT NAVI 안내대로 ' + (changed ? '<b>' + n.gate + ' ' + doorName(n.door) + '</b>(으)로 나가면' : '같은 출구로 ' + (n.delay ? n.delay + '분 늦게 ' : '') + '나가면') +
+      ' 줄은 약 <b>' + fmt(n.queue) + '명</b>(' + losName(n.queue) + '), 줄 대기 약 ' + n.wait.toFixed(1) + '분이에요.</div>' +
+    '<div class="ann">📢 ' + (n.delay ? '[' + n.delay + '분 뒤] ' : '[종료 직후] ') + zz.id + '구역 관객 여러분, ' + n.gate + ' 방향 출구로 퇴장해 주세요.' + (n.delay ? ' 그전까지는 자리에서 잠시 기다려 주세요.' : '') + '</div>' +
+    '<div class="qr">좌석 QR 코드에 <code>find.html#z=' + zz.id + '</code> 주소를 넣으면 관객이 찍자마자 이 화면을 볼 수 있어요.<br>시간은 구역 관객 중 가운데 사람 기준 예상치이며, 시뮬레이션 결과입니다.</div>';
+}
+var m = location.hash.match(/z=(\d+)/); if (m && +m[1] >= 1 && +m[1] <= 52) state.z = +m[1];
+sel.value = state.z || ''; render();
+</script>
+<script src="js/nav.js"></script>
+</body>
+</html>

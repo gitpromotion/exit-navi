@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>운영자 안내 방송판 · EXIT NAVI</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
+<link rel="stylesheet" href="css/site.css">
+<style>
+.app{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:22px;align-items:start;padding:24px 0 64px}
+.panel{background:#fff;border:1px solid var(--line);border-radius:18px;padding:20px}
+.panel h3{margin:0 0 12px;font-size:17px}
+.mapbox svg{width:100%;height:auto;display:block}
+.lb{text-anchor:middle;font-family:'Noto Sans KR',sans-serif;pointer-events:none}
+.lb.zn{font-size:3.3px;font-weight:700;fill:#0b0b0b}.lb.dl{font-size:2.3px;fill:#0b0b0b}.lb.w{fill:#fff}
+.lb.dn{font-size:2.8px;fill:#52514e}.lb.gt{font-size:3.6px;font-weight:900}.lb.s{font-size:3px;fill:#8a8983}
+.ctrl{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin:0 0 4px}
+.ctrl label{font-size:13px;color:var(--ink2);font-weight:700}
+.seg{display:inline-flex;background:var(--soft);border-radius:10px;padding:3px;gap:2px}
+.seg button{font:inherit;border:0;background:transparent;font-size:14px;padding:6px 12px;cursor:pointer;border-radius:8px;color:var(--ink)}
+.seg button.on{background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.12);font-weight:700}
+.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:16px 0}
+.summary div{background:var(--soft);border-radius:12px;padding:12px}
+.summary .l{font-size:12px;color:var(--ink2)}
+.summary .v{font-size:22px;font-weight:900;font-variant-numeric:tabular-nums}
+.summary .v s{font-size:13px;color:var(--ink3);text-decoration:none;font-weight:500;margin-right:4px}
+.tl{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.tl li{display:grid;grid-template-columns:78px 1fr auto;gap:12px;align-items:start;border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.tl .t{font-weight:900;font-size:15px}
+.tl .t small{display:block;font-weight:400;font-size:12px;color:var(--ink2)}
+.tl .tx{font-size:15px;line-height:1.7}
+.tl .g{display:inline-block;font-weight:700;padding:0 8px;border-radius:6px;color:#fff;font-size:13px;margin-right:4px}
+.tl button{font:inherit;font-size:12px;border:1px solid var(--line);background:#fff;border-radius:8px;padding:5px 9px;cursor:pointer;white-space:nowrap}
+.bars{display:grid;gap:8px;font-size:13px}
+.brow{display:grid;grid-template-columns:72px 1fr;gap:10px;align-items:center}
+.brow .tr{position:relative;height:30px}
+.brow .b{position:absolute;left:0;height:13px;border-radius:0 4px 4px 0;display:flex;align-items:center}
+.brow .b.c{top:0;background:#b9b8b0}
+.brow .b.n{top:15px;background:#2a78d6}
+.brow .b span{position:absolute;left:calc(100% + 6px);white-space:nowrap;font-variant-numeric:tabular-nums;color:var(--ink2);font-size:12px}
+.brow .b.n span{color:var(--ink);font-weight:700}
+.keys{display:flex;gap:14px;font-size:12px;color:var(--ink2);margin-bottom:10px}
+.keys i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px}
+.limit{position:absolute;top:-4px;bottom:-4px;border-left:1.5px dashed #e34948}
+@media(max-width:960px){.app{grid-template-columns:1fr}.summary{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div style="padding-top:36px">
+    <p class="eyebrow">운영자용</p>
+    <h2 class="t" style="margin-bottom:6px">운영자 안내 방송판</h2>
+    <p class="lead" style="margin-bottom:14px">오늘 관객 조건을 고르면, 공연 종료 후 시간 순서대로 읽을 방송 문구와 출구별 예상 혼잡을 보여 줍니다.</p>
+    <div class="ctrl"><label>플로어 관객</label>
+      <div class="seg" id="floor"><button data-f="0">없음</button><button data-f="2000" class="on">2,000명</button><button data-f="4000">4,000명</button></div>
+    </div>
+    <div class="summary" id="sum"></div>
+  </div>
+  <div class="app">
+    <div class="panel mapbox">
+      <h3>구역별 출구·출발 시점</h3>
+      <svg id="map" viewBox="-87 -87 174 174" role="img" aria-label="구역별 배정 출구 지도"></svg>
+      <div style="font-size:13px;color:var(--ink2);margin-top:6px">색 = 배정 출구(<b style="color:#6250d6">2-1문</b> · <b style="color:#2a78d6">2-2문</b> · <b style="color:#d55181">2-3문</b>), 연한 색 = 잠시 기다렸다 출발</div>
+    </div>
+    <div style="display:grid;gap:22px">
+      <div class="panel"><h3>안내 방송 순서</h3><ul class="tl" id="tl"></ul></div>
+      <div class="panel">
+        <h3>출구별 최대 대기 인원</h3>
+        <div class="keys"><span><i style="background:#b9b8b0"></i>지금처럼</span><span><i style="background:#2a78d6"></i>EXIT NAVI</span><span><i style="border-left:1.5px dashed #e34948;width:0;border-radius:0"></i>333명 = 매우 혼잡 시작</span></div>
+        <div class="bars" id="bars"></div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="js/data2.js"></script>
+<script src="js/common.js"></script>
+<script>
+var f = 2000;
+document.querySelectorAll('#floor button').forEach(function (b) {
+  b.onclick = function () { f = +b.dataset.f; document.querySelectorAll('#floor button').forEach(function (x) { x.classList.toggle('on', x === b); }); render(); };
+});
+function text(a) {
+  return a.parts.map(function (p) { return ranges(p.zones) + '구역 → ' + p.gate; }).join(', ') + '(으)로 퇴장해 주세요.' +
+    (a.t === 0 ? ' 나머지 구역은 잠시 자리에서 기다려 주세요.' : '');
+}
+function render() {
+  var kN = keyOf('P4', f), kC = keyOf('P0', f), N = sc(kN).summary, C = sc(kC).summary;
+  document.getElementById('sum').innerHTML =
+    '<div><div class="l">총 관객</div><div class="v">' + fmt(N.total) + '명</div></div>' +
+    '<div><div class="l">출구 최대 대기</div><div class="v"><s>' + fmt(C.maxq) + '</s>' + fmt(N.maxq) + '명</div></div>' +
+    '<div><div class="l">1인 평균 대기</div><div class="v"><s>' + (C.wait + C.seat).toFixed(1) + '</s>' + (N.wait + N.seat).toFixed(1) + '분</div></div>' +
+    '<div><div class="l">최악 혼잡 등급</div><div class="v"><s>' + C.los + '</s>' + N.los + '</div></div>';
+  drawMap(document.getElementById('map'), { key: kN, showDelay: true });
+  var anns = announcements(kN);
+  document.getElementById('tl').innerHTML = anns.map(function (a, i) {
+    var parts = a.parts.map(function (p) { return '<span class="g" style="background:' + GATE[p.gate] + '">' + p.gate + '</span>' + ranges(p.zones) + '구역'; }).join('<br>');
+    return '<li><div class="t">' + (a.t === 0 ? '종료 직후' : a.t + '분 뒤') + '<small>' + a.parts.reduce(function (s, p) { return s + p.zones.length; }, 0) + '개 구역</small></div>' +
+      '<div class="tx">' + parts + '</div><button data-i="' + i + '">문구 복사</button></li>';
+  }).join('');
+  document.querySelectorAll('#tl button').forEach(function (b) {
+    b.onclick = function () {
+      var a = anns[+b.dataset.i], s = (a.t === 0 ? '[종료 직후] ' : '[' + a.t + '분 뒤] ') + text(a);
+      (navigator.clipboard ? navigator.clipboard.writeText(s) : Promise.reject()).then(function () { b.textContent = '복사됨'; }, function () { prompt('방송 문구', s); });
+      setTimeout(function () { b.textContent = '문구 복사'; }, 1500);
+    };
+  });
+  var peak = function (k, i) { return Math.max.apply(null, sc(k).q.map(function (r) { return r[i]; })); };
+  var rows = DOORS.map(function (d, i) { return { d: d, c: peak(kC, i), n: peak(kN, i) }; });
+  var mx = Math.max.apply(null, rows.map(function (r) { return r.c; })) * 1.18;
+  document.getElementById('bars').innerHTML = rows.map(function (r) {
+    return '<div class="brow"><span><b style="color:' + GATE[r.d.gate] + '">' + r.d.gate + '</b> ' + doorName(r.d.id) + '</span><div class="tr">' +
+      '<div class="limit" style="left:' + (333 / mx * 100) + '%"></div>' +
+      '<div class="b c" style="width:' + Math.max(r.c / mx * 100, 0.6) + '%"><span>' + fmt(r.c) + '</span></div>' +
+      '<div class="b n" style="width:' + Math.max(r.n / mx * 100, 0.6) + '%"><span>' + fmt(r.n) + '</span></div></div></div>';
+  }).join('');
+}
+render();
+</script>
+<script src="js/nav.js"></script>
+</body>
+</html>

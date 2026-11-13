@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>데이터·방법 · EXIT NAVI</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
+<link rel="stylesheet" href="css/site.css">
+<style>
+.toc{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.toc a{font-size:14px;text-decoration:none;border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 12px}
+.step{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);gap:28px;align-items:center;padding:34px 0;border-top:1px solid var(--line)}
+.step h3{font-size:22px;margin:6px 0 10px}
+.step p,.step li{color:var(--ink2);font-size:15px}
+.step ul{padding-left:18px;margin:8px 0}
+.step .k{font-size:12px;font-weight:700;color:var(--ink3);letter-spacing:.08em}
+@media(max-width:860px){.step{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<section style="padding-bottom:30px">
+  <div class="wrap">
+    <p class="eyebrow">데이터·방법</p>
+    <h2 class="t">어떤 데이터로, 어떻게 계산했나요</h2>
+    <p class="lead">한국체육산업개발(주)의 실감형 콘텐츠와 공연 데이터를 중심으로, 교통·날씨 데이터를 더해 퇴장을 시뮬레이션하고 최적화했습니다.</p>
+    <div class="toc"><a href="#data">활용 데이터</a><a href="#method">분석 단계</a><a href="#result">결과</a><a href="#limit">한계와 추가 데이터</a></div>
+  </div>
+</section>
+
+<section id="data" style="padding-top:20px">
+  <div class="wrap">
+    <h2 class="t" style="font-size:26px">활용 공공데이터</h2>
+    <div class="tbl">
+    <table class="t">
+      <thead><tr><th>구분</th><th>데이터</th><th>제공</th><th>활용</th></tr></thead>
+      <tbody>
+        <tr><td><span class="pill org">기관</span></td><td>KSPO DOME 3D 모델 (실감형 콘텐츠)</td><td>한국체육산업개발(주)</td><td>실제 치수 측정, 평면도 축척 보정, 3D 화면</td></tr>
+        <tr><td><span class="pill org">기관</span></td><td>올림픽공원 공연정보 (국문·영문)</td><td>한국체육산업개발(주)</td><td>공연 일정·시작 시각·관객 규모</td></tr>
+        <tr><td><span class="pill org">기관</span></td><td>KSPO DOME 층별 평면도·좌석배치도</td><td>한국체육산업개발(주)</td><td>52개 구역, 출구 9곳, 구역별 좌석 수</td></tr>
+        <tr><td><span class="pill">타 기관</span></td><td>공연예술통합전산망(KOPIS) 공연정보</td><td>예술경영지원센터</td><td>공연 시간·장르·가격 → 관객 규모 예측</td></tr>
+        <tr><td><span class="pill">타 기관</span></td><td>지하철 역별·시간대별 승하차 인원</td><td>서울특별시</td><td>공연 후 승차 급증으로 퇴장 시각 검증</td></tr>
+        <tr><td><span class="pill">타 기관</span></td><td>종관기상관측(ASOS) 시간 자료</td><td>기상청</td><td>기온·강수 → 관객 규모 예측</td></tr>
+        <tr><td><span class="pill">타 기관</span></td><td>특일 정보</td><td>한국천문연구원</td><td>공휴일 구분 → 관객 규모 예측</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p class="note" style="margin-top:14px">모든 데이터는 2025년 기준이며, 정리한 결과는 테이블 14개(PostgreSQL)로 저장해 기관 시스템에 그대로 옮길 수 있게 했습니다.</p>
+  </div>
+</section>
+
+<section id="method" style="padding-top:20px">
+  <div class="wrap">
+    <h2 class="t" style="font-size:26px">분석 단계</h2>
+    <div class="step">
+      <div><span class="k">STEP 1</span><h3>경로망 만들기</h3>
+        <p>평면도를 3D 모델 치수(외곽 반지름 약 63m)로 보정해 52개 구역 → 계단 → 출구 9곳의 경로망을 만들었습니다.</p>
+        <ul><li>출구 문 폭 2.35m, 1분에 약 183명 통과</li><li>걷는 속도 1.2m/s, 계단 0.6m/s</li></ul></div>
+      <div class="two"><figure class="fig"><img src="img/overlay.jpg" alt="지금처럼 가까운 출구로 나갈 때 경로"><figcaption>지금처럼: 가장 가까운 출구로</figcaption></figure><figure class="fig"><img src="img/planmap.jpg" alt="EXIT NAVI 최적 계획 경로"><figcaption>EXIT NAVI: 출구 재배정 + 시간차</figcaption></figure></div>
+    </div>
+    <div class="step">
+      <div><span class="k">STEP 2 · 3</span><h3>시뮬레이션과 검증</h3>
+        <p>관객이 일어나는 시간(중앙값 4분), 걷기, 출구 앞 줄 서기를 5초 단위로 계산하고, 줄 길이로 혼잡 등급(A~F)을 매겼습니다.</p>
+        <p>2025년 공연 108회의 지하철 승차 급증 시간과 비교해 맞춘 결과, 혼잡 시간대 적중률이 <b>14% → 79%</b>로 올라갔습니다.</p></div>
+      <figure class="fig"><img src="img/valid.jpg" alt="지하철 승차 데이터와 시뮬레이션 비교 검증 차트"><figcaption>공연별 지하철 승차 급증 시간과 시뮬레이션 비교</figcaption></figure>
+    </div>
+    <div class="step">
+      <div><span class="k">STEP 4</span><h3>시차 퇴장 최적화 (MILP)</h3>
+        <p>구역마다 "어느 출구로, 몇 분 뒤에"를 정해 출구 줄 대기와 걷는 거리를 함께 최소화했습니다.</p>
+        <ul><li>38개 구역은 바로, 11개 구역은 2분 뒤, 3개 구역은 4분 뒤 출발</li><li>24개 구역은 더 한가한 출구로 변경</li><li>새 조건에서도 3초 안에 다시 계산</li></ul></div>
+      <figure class="fig"><img src="img/compare.jpg" alt="퇴장 방식별 출구 대기 인원 비교 차트"><figcaption>퇴장 방식별 시간에 따른 출구 대기 인원</figcaption></figure>
+    </div>
+    <div class="step">
+      <div><span class="k">STEP 5</span><h3>조건이 달라져도 버티는지</h3>
+        <p>플로어 관객 0·2,000·4,000명과 관객이 일어나는 속도를 바꾼 9가지 조건 모두에서 최대 대기가 크게 줄었습니다.</p>
+        <p>관객 일부만 안내를 따르는 경우도 계산했습니다. 준수율 70%를 가정한 계획은 최대 대기 <b>193명</b>으로, 100% 따를 때(211명)와 비슷합니다.</p></div>
+      <figure class="fig"><img src="img/comp.jpg" alt="안내 준수율별 최대 대기 인원 차트"><figcaption>안내를 따르는 관객 비율별 출구 최대 대기 인원</figcaption></figure>
+    </div>
+    <div class="step">
+      <div><span class="k">STEP 6</span><h3>관객 규모 예측</h3>
+        <p>공연 정보·요일·날씨·공휴일 16개 변수로 공연 후 지하철 승차(관객 규모 대리 지표)를 예측했습니다. 평균 오차 1,327명(24.4%)으로, 공연 전에 오늘 조건에 맞는 계획을 미리 고를 수 있습니다.</p></div>
+      <figure class="fig"><img src="img/pred.jpg" alt="관객 규모 예측 결과 차트"><figcaption>관객 규모 예측 결과</figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<section id="result" style="background:var(--soft)">
+  <div class="wrap">
+    <h2 class="t" style="font-size:26px">결과 요약</h2>
+    <p class="lead">플로어 관객 2,000명, 총 15,948명 기준</p>
+    <div class="tbl">
+    <table class="t">
+      <thead><tr><th>지표</th><th class="num">지금처럼</th><th class="num">EXIT NAVI</th></tr></thead>
+      <tbody>
+        <tr><td>출구 최대 대기 인원</td><td class="num">2,292명</td><td class="num"><b>211명</b></td></tr>
+        <tr><td>최대 대기시간</td><td class="num">12.5분</td><td class="num"><b>1.2분</b></td></tr>
+        <tr><td>1인 평균 대기 (자리 대기 포함)</td><td class="num">4.1분</td><td class="num"><b>0.9분</b></td></tr>
+        <tr><td>최악 혼잡 등급</td><td class="num">F</td><td class="num"><b>D</b></td></tr>
+        <tr><td>위험 등급(E·F) 지속 시간</td><td class="num">21.7분</td><td class="num"><b>0분</b></td></tr>
+        <tr><td>관객 90% 퇴장 완료</td><td class="num">21.8분</td><td class="num"><b>13.0분</b></td></tr>
+        <tr><td>평균 걷는 거리</td><td class="num">47m</td><td class="num">51m</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+</section>
+
+<section id="limit">
+  <div class="wrap two" style="align-items:start">
+    <div>
+      <h2 class="t" style="font-size:26px">한계</h2>
+      <p style="color:var(--ink2)">출구별 줄 길이는 실측이 아니라 실제 데이터를 바탕으로 한 시뮬레이션 결과입니다. 지하철 데이터는 1시간 단위라 분 단위 검증에는 한계가 있습니다. 시범 운영 때 실측 데이터로 보정할 계획입니다.</p>
+    </div>
+    <div>
+      <h2 class="t" style="font-size:26px">추가 개방이 필요한 데이터</h2>
+      <ul style="color:var(--ink2);padding-left:18px">
+        <li>출입문별 계수기·게이트 통과 인원 (분 단위)</li>
+        <li>공연 회차별 실제 판매 좌석·플로어 인원</li>
+        <li>공연 실제 종료 시각</li>
+        <li>KSPO DOME 출입구·계단 실측 폭 (CAD 도면)</li>
+      </ul>
+    </div>
+  </div>
+</section>
+<script src="js/nav.js"></script>
+</body>
+</html>

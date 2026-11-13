@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EXIT NAVI · KSPO DOME 구역별 시차 퇴장 안내</title>
+<meta name="description" content="실감형 콘텐츠와 공공데이터로 설계한 KSPO DOME 구역별 시차 퇴장 안내 서비스">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
+<link rel="stylesheet" href="css/site.css">
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="grid">
+      <div>
+        <span class="tag">2026 공공데이터 활용 경진대회 · KSPO DOME</span>
+        <h1>공연이 끝난 뒤 30분,<br><em>어느 출구로, 몇 분 뒤에</em><br>나가면 될까요?</h1>
+        <p>EXIT NAVI는 KSPO DOME 3D 모델과 공공데이터로 1만 6천 명의 퇴장을 미리 계산하고, 52개 구역마다 가장 덜 붐비는 출구와 출발 시점을 알려 주는 퇴장 안내 서비스입니다.</p>
+        <div class="btns">
+          <a class="btn light" href="find.html">내 구역 출구 찾기 →</a>
+          <a class="btn ghost" href="sim.html">3D 시뮬레이션 보기</a>
+        </div>
+      </div>
+      <div class="shot"><img src="img/pres.jpg" alt="EXIT NAVI 3D 시뮬레이션 발표 모드: 현재 방식과 최적 방식을 나란히 비교한 화면"></div>
+    </div>
+    <div class="kpis">
+      <div class="kpi"><div class="l">출구 최대 대기 인원</div><div class="v"><s>2,292명</s>211명</div><div class="d">현재 방식 → EXIT NAVI</div></div>
+      <div class="kpi"><div class="l">1인 평균 대기</div><div class="v"><s>4.1분</s>0.9분</div><div class="d">자리 대기 포함</div></div>
+      <div class="kpi"><div class="l">출구 혼잡 등급</div><div class="v"><s>F</s>D</div><div class="d">위험 등급 지속 21.7분 → 0분</div></div>
+      <div class="kpi"><div class="l">추가 비용</div><div class="v">0원</div><div class="d">기존 방송·전광판 그대로 사용</div></div>
+    </div>
+  </div>
+</header>
+
+<section>
+  <div class="wrap problem">
+    <div>
+      <p class="eyebrow">문제</p>
+      <h2 class="t">관객의 절반 이상이<br>출구 두 곳으로 몰립니다</h2>
+      <p class="lead">KSPO DOME은 국내 대표 실내 공연장입니다. 공연이 끝나면 모두가 가장 가까운 출구로 한꺼번에 움직이고, 지금 안내는 "천천히 나가 주세요" 같은 일반 방송뿐입니다.</p>
+      <div class="facts">
+        <div class="fact"><b>116회</b><span>2025년 KSPO DOME 공연 횟수</span></div>
+        <div class="fact"><b>약 1만 6천 명</b><span>공연 1회에 동시에 퇴장하는 관객 (플로어 2,000명 포함)</span></div>
+        <div class="fact"><b>47%</b><span>공연 후 지하철로 귀가하는 관객 비율 (2025 승하차 데이터 분석)</span></div>
+        <div class="fact"><b>1992년</b><span>같은 장소에서 공연 중 관객이 몰려 1명이 숨지고 40여 명이 다친 사고</span></div>
+      </div>
+    </div>
+    <div>
+      <div class="stat-big">56%<small>출구 2곳 집중</small></div>
+      <p style="color:var(--ink2);margin:10px 0 18px">가장 가까운 출구로만 나가면 9개 출구 중 2곳(2-1문 #1, 2-3문 #9)에 관객의 56%가 몰려 줄이 2,000명 넘게 쌓입니다.</p>
+      <figure class="fig"><img src="img/overlay.jpg" alt="평면도 위 퇴장 경로망"><figcaption>3D 모델 치수로 보정한 평면도 위 구역·계단·출구 경로망</figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<section style="background:var(--soft)">
+  <div class="wrap">
+    <p class="eyebrow">해결 방법</p>
+    <h2 class="t">데이터로 퇴장을 미리 계산합니다</h2>
+    <p class="lead">공연 전 관객 규모를 예측하고, 퇴장을 시뮬레이션하고, 최적 계획을 만들어 안내 문구로 바꿉니다. 같은 조건이면 3초 안에 다시 계산합니다.</p>
+    <div class="steps">
+      <div class="card"><h3>관객 규모 예측</h3><p>공연 정보·요일·날씨·공휴일로 오늘 관객 수를 예측합니다.</p></div>
+      <div class="card"><h3>퇴장 시뮬레이션</h3><p>52개 구역의 관객이 일어나 걷고 줄 서는 과정을 5초 단위로 계산합니다.</p></div>
+      <div class="card"><h3>시차 퇴장 최적화</h3><p>구역마다 출구와 출발 시점(바로·2분 뒤·4분 뒤)을 정합니다.</p></div>
+      <div class="card"><h3>안내</h3><p>운영자에게는 방송 문구를, 관객에게는 "내 구역 출구"를 보여 줍니다.</p></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="eyebrow">서비스</p>
+    <h2 class="t">직접 확인해 보세요</h2>
+    <p class="lead">설치나 로그인 없이 브라우저에서 바로 열립니다.</p>
+    <div class="cards">
+      <a class="card" href="find.html"><img src="img/planmap.jpg" alt=""><span class="n">관객용</span><h3>내 구역 출구 찾기</h3><p>구역을 누르면 내가 나갈 출구, 출발 시점, 예상 대기시간을 알려 줍니다.</p><span class="go">열기 →</span></a>
+      <a class="card" href="operator.html"><img src="img/compare.jpg" alt=""><span class="n">운영자용</span><h3>운영자 안내 방송판</h3><p>시간 순서의 방송 문구와 출구별 예상 혼잡을 한 화면에 보여 줍니다.</p><span class="go">열기 →</span></a>
+      <a class="card" href="sim.html"><img src="img/ana.jpg" alt=""><span class="n">실감형 콘텐츠</span><h3>3D 퇴장 시뮬레이션</h3><p>현재 방식과 최적 방식을 3D로 비교하고, 조건을 바꿔 가며 분석합니다.</p><span class="go">열기 →</span></a>
+      <a class="card" href="story.html"><img src="img/story_hero.jpg" alt=""><span class="n">스토리</span><h3>1만 6천 명이 동시에 일어날 때</h3><p>문제부터 해결까지 스크롤로 따라가는 한 페이지 이야기입니다.</p><span class="go">열기 →</span></a>
+    </div>
+  </div>
+</section>
+
+<section class="dark">
+  <div class="wrap">
+    <p class="eyebrow">결과</p>
+    <h2 class="t">안내만 바꿔도 줄이 10분의 1로 줄어듭니다</h2>
+    <p class="lead">플로어 관객 2,000명, 총 15,948명 기준 시뮬레이션 결과입니다.</p>
+    <div class="tbl">
+    <table class="t" style="color:var(--ink)">
+      <thead><tr><th>퇴장 방식</th><th class="num">출구 최대 대기</th><th class="num">1인 평균 대기</th><th class="num">평균 걷는 거리</th><th class="num">최악 등급</th></tr></thead>
+      <tbody>
+        <tr><td>지금처럼 (가까운 출구, 동시 퇴장)</td><td class="num">2,292명</td><td class="num">4.1분</td><td class="num">47m</td><td class="num">F</td></tr>
+        <tr><td>출구 그대로 + 시간차만</td><td class="num">1,121명</td><td class="num">4.2분</td><td class="num">47m</td><td class="num">F</td></tr>
+        <tr><td>출구 배정만</td><td class="num">319명</td><td class="num">0.7분</td><td class="num">51m</td><td class="num">D</td></tr>
+        <tr class="best"><td>EXIT NAVI (출구 배정 + 시간차)</td><td class="num">211명</td><td class="num">0.9분</td><td class="num">51m</td><td class="num">D</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <div class="cards" style="margin-top:22px">
+      <div class="card" style="background:transparent;border-color:#3a3936"><h3 style="color:#fff">관객 70%만 따라도</h3><p style="color:#c3c2b7">준수율을 반영한 계획으로 최대 대기 193명. 모두가 따르지 않아도 효과가 유지됩니다.</p></div>
+      <div class="card" style="background:transparent;border-color:#3a3936"><h3 style="color:#fff">실제 데이터로 검증</h3><p style="color:#c3c2b7">2025년 공연 108회의 지하철 승차 급증 시간과 비교해 혼잡 시간 적중률 14% → 79%.</p></div>
+      <div class="card" style="background:transparent;border-color:#3a3936"><h3 style="color:#fff">연간 약 10만 인·시간</h3><p style="color:#c3c2b7">1년 116회 공연 동안 줄어드는 관객 대기시간 추정치입니다.</p></div>
+    </div>
+    <div class="btns" style="margin-top:28px"><a class="btn light" href="about.html">데이터·방법 자세히 →</a></div>
+  </div>
+</section>
+
+<script src="js/nav.js"></script>
+</body>
+</html>
