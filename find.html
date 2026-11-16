@@ -84,7 +84,7 @@ select,.seg button{font:inherit;font-size:15px;border:1px solid var(--line);back
   </div>
 </div>
 <script src="js/data2.js"></script>
-<script src="js/common.js"></script>
+<script src="js/common.js?v=3"></script>
 <script>
 var state = { z: null, f: 2000, lang: 'ko', end: '21:30' };
 function clock(base, add) { var p = base.split(':'), m = +p[0] * 60 + +p[1] + Math.round(add); m = (m + 1440) % 1440; return String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0'); }
