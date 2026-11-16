@@ -39,6 +39,7 @@
         <tr><td><span class="pill org">기관</span></td><td>KSPO DOME 층별 평면도·좌석배치도</td><td>한국체육산업개발(주)</td><td>52개 구역, 출구 9곳, 구역별 좌석 수</td></tr>
         <tr><td><span class="pill">타 기관</span></td><td>공연예술통합전산망(KOPIS) 공연정보</td><td>예술경영지원센터</td><td>공연 시간·장르·가격 → 관객 규모 예측</td></tr>
         <tr><td><span class="pill">타 기관</span></td><td>지하철 역별·시간대별 승하차 인원</td><td>서울특별시</td><td>공연 후 승차 급증으로 퇴장 시각 검증</td></tr>
+        <tr><td><span class="pill">타 기관</span></td><td>버스노선별 정류장별 시간대별 승하차 인원</td><td>서울특별시</td><td>올림픽공원 주변 정류장 17곳, 2024.12~2025.12 → 버스 귀가 비율</td></tr>
         <tr><td><span class="pill">타 기관</span></td><td>종관기상관측(ASOS) 시간 자료</td><td>기상청</td><td>기온·강수 → 관객 규모 예측</td></tr>
         <tr><td><span class="pill">타 기관</span></td><td>특일 정보</td><td>한국천문연구원</td><td>공휴일 구분 → 관객 규모 예측</td></tr>
       </tbody>
@@ -97,6 +98,23 @@
         <p>구역·출구·시점으로 만든 방송 문구를 한국어·영어·일본어·중국어로 자동 생성하고, 브라우저 내장 음성 합성으로 바로 들려줍니다. 해외 관객이 많은 공연에서도 추가 비용 없이 같은 안내를 할 수 있습니다.</p></div>
       <div class="note" style="font-size:14px">올림픽공원 공연정보(국문·영문) 데이터와 함께 활용하면 공연별 안내 언어를 미리 정할 수 있습니다.</div>
     </div>
+    <div class="step">
+      <div><span class="k">STEP 10</span><h3>귀가 교통수단 — 버스는 1% 미만</h3>
+        <p>서울시 버스 정류장 시간대별 승하차(2024.12~2025.12, 13개월)에서 KSPO DOME 도보권 정류장 9곳(올림픽공원역·올림픽회관·남2문·장미광장 등)을 뽑았습니다.</p>
+        <p>월 단위 자료라 공연 날만 골라낼 수 없어서, 달마다 그 시간대에 끝난 공연 수와 버스 승차량의 관계를 회귀로 추정했습니다. 계절 차이는 낮 시간 승차로 보정하고, 올림픽홀·핸드볼경기장 공연은 따로 통제했습니다.</p>
+        <ul><li>KSPO 공연 1회당 버스 초과 승차: 사실상 0명 (95% 범위 −98 ~ +116명)</li><li>정류장 범위(9곳/17곳)·시간대(종료 직후/1시간 뒤)를 바꾼 4가지 계산 모두 같은 결과</li><li>가장 크게 잡아도 관객의 0.9%</li></ul></div>
+      <div>
+        <div class="tbl"><table class="t">
+          <thead><tr><th>귀가 교통수단</th><th class="num">비율</th><th>근거</th></tr></thead>
+          <tbody>
+            <tr><td>지하철</td><td class="num"><b>47%</b></td><td>2025 공연 116회 역별 초과 승차</td></tr>
+            <tr><td>버스</td><td class="num"><b>1% 미만</b></td><td>2024.12~2025.12 정류장 승차 회귀</td></tr>
+            <tr><td>자가용·택시·도보 등</td><td class="num">약 53%</td><td>나머지 (주차장 입출차 데이터로 분리 예정)</td></tr>
+          </tbody>
+        </table></div>
+        <p class="note" style="font-size:14px;margin-top:10px">결론: 공연 후 대중교통 귀가는 거의 전부 지하철(올림픽공원역)입니다. 그래서 EXIT NAVI의 귀갓길 안내와 역 도착 예보는 올림픽공원역에 집중합니다.</p>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -131,6 +149,8 @@
       <h2 class="t" style="font-size:26px">추가 개방이 필요한 데이터</h2>
       <ul style="color:var(--ink2);padding-left:18px">
         <li>출입문별 계수기·게이트 통과 인원 (분 단위)</li>
+        <li>올림픽공원 주차장 공연일 분 단위 입출차 기록 (자가용 귀가 비율 분리)</li>
+        <li>버스 정류장 일자·시간대별 승차 인원 (현재는 월 단위만 공개)</li>
         <li>공연 회차별 실제 판매 좌석·플로어 인원</li>
         <li>공연 실제 종료 시각</li>
         <li>KSPO DOME 출입구·계단 실측 폭 (CAD 도면)</li>
