@@ -87,6 +87,7 @@ select.emg{border-color:#e34948;color:#8f1d1c;font-weight:700;background:#fdecec
 #board .zz{font-size:26px;font-weight:700;line-height:1.5}
 #board .zz .gt{display:inline-block;font-size:18px;font-weight:900;padding:1px 10px;border-radius:8px;margin-right:8px;color:#fff;vertical-align:3px}
 #board .zz .sub{display:block;font-size:15px;font-weight:400;color:#9aa0ab}
+#board .zz .ledn{display:inline-block;margin-top:6px;font-size:14px;font-weight:500;color:#f3d48a;background:#2a2412;border:1px solid #4d4020;border-radius:8px;padding:3px 10px}
 #board .bf{margin-top:auto;padding-top:14px;font-size:13px;color:#7d8390}
 @media(max-width:760px){#board .br{grid-template-columns:1fr}#board .clock{font-size:34px}}
 @media(max-width:960px){.app{grid-template-columns:1fr}.summary{grid-template-columns:repeat(2,1fr)}.stat2{grid-template-columns:1fr}}
@@ -290,6 +291,7 @@ function drawBoard() {
     if (sl.acc) zz = '<span class="gt" style="background:#0f766e">♿ 우선</span>장애인석 + 동반자 → ' + accGate() + ' ' + accDoors() + '<span class="sub">Wheelchair seats & companions first · ' + gateL(accGate(), 'en') + '</span>';
     else zz = sl.parts.map(function (p) { return '<span class="gt" style="background:' + GATE[p.gate] + '">' + p.gate + '</span>' + ranges(p.zones) + '구역'; }).join('<br>') +
       '<span class="sub">' + sl.parts.map(function (p) { return zonesL(p.zones, 'en', false) + ' → ' + gateL(p.gate, 'en'); }).join(' · ') + '</span>';
+    if (!sl.acc && rem > 0) zz += '<span class="ledn">' + (rem > 60 ? '🎬 기다리는 동안 무대 LED: ' + (BD.t < 60 ? '커튼콜 영상' : BD.t < 150 ? '포토타임 (객석 조명 ON)' : '앵콜 비하인드') + ' · 안내 시각에 출발하면 쿠폰 🎟' : '🎟 곧 쿠폰이 열려요 — 안내 시각에 맞춰 출발해 주세요') + '</span>';
     return '<div class="br ' + cls + '"><div class="sig"><div class="lamp ' + lamp + '"></div><div class="st">' + st + '</div></div><div class="zz">' + zz + '</div></div>';
   }).join('');
 }
@@ -327,5 +329,6 @@ document.getElementById('bVoice').onclick = function () { BD.voice = !BD.voice; 
 document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && document.getElementById('board').classList.contains('on')) closeBoard(); });
 </script>
 <script src="js/nav.js"></script>
+<script src="js/tour.js?v=1"></script>
 </body>
 </html>

@@ -46,6 +46,34 @@ select,.seg button{font:inherit;font-size:15px;border:1px solid var(--line);back
 .lseg button.on{background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.12);font-weight:700}
 .say{font:inherit;font-size:13px;border:1px solid #b5d0f5;background:#fff;color:#123e73;border-radius:8px;padding:4px 10px;cursor:pointer;margin-left:auto}
 .ann{margin-top:8px}
+.rw{margin-top:18px;border:1px solid #f0d9a8;background:linear-gradient(180deg,#fffaf0,#fff);border-radius:16px;padding:16px 18px}
+.rw h4{margin:0;font-size:15px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.rw h4 small{font-weight:400;font-size:12px;color:#8a6a1f}
+.rw .top{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-top:12px;flex-wrap:wrap}
+.rw .cd{font-size:13px;color:#6b5a2e}
+.rw .cd b{display:block;font-size:40px;line-height:1.05;font-weight:900;color:#0b0b0b;font-variant-numeric:tabular-nums;letter-spacing:-1px}
+.rw .cd b.go{color:#0f8a5f}
+.rw .ctl{display:flex;gap:6px;flex-wrap:wrap}
+.rw .ctl button{font:inherit;font-size:12.5px;border:1px solid #e3cf9f;background:#fff;border-radius:8px;padding:5px 10px;cursor:pointer;color:#4a3a12}
+.rw .ctl button.on{background:#0b0b0b;color:#fff;border-color:#0b0b0b}
+.rw .pb{height:8px;background:#f3ead5;border-radius:4px;overflow:hidden;margin:12px 0 4px}
+.rw .pb i{display:block;height:100%;width:0;background:linear-gradient(90deg,#eda100,#1baf7a);border-radius:4px;transition:width .25s linear}
+.rw .led{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:6px}
+.rw .led li{display:grid;grid-template-columns:62px 1fr;gap:10px;align-items:center;font-size:13.5px;padding:7px 10px;border-radius:10px;background:#fff;border:1px solid #f1e6cc;color:#6b5a2e;transition:all .2s}
+.rw .led li .tm{font-size:12px;font-variant-numeric:tabular-nums;color:#a38a4f}
+.rw .led li.now{border-color:#0b0b0b;color:#0b0b0b;font-weight:700;box-shadow:0 1px 0 #0b0b0b}
+.rw .led li.now .tm{color:#0b0b0b}
+.rw .led li.done{opacity:.45}
+.rw .cp{margin-top:12px;border:1.5px dashed #d9c38f;border-radius:12px;padding:12px 14px;display:grid;grid-template-columns:44px 1fr;gap:12px;align-items:center;transition:all .3s}
+.rw .cp .ic{font-size:30px;text-align:center}
+.rw .cp .tx{font-size:13px;color:#6b5a2e;line-height:1.6}
+.rw .cp .tx b{font-size:15px;color:#0b0b0b}
+.rw .cp.open{border-style:solid;border-color:#1baf7a;background:#effaf5}
+.rw .cp code{font-size:13px;background:#fff;border:1px solid #bfe6d5;border-radius:6px;padding:1px 6px}
+.rw .early{margin-top:10px;font-size:13px;line-height:1.7;color:var(--ink2);background:#f6f5f1;border-radius:10px;padding:10px 12px;display:none}
+.rw .early.on{display:block}
+.rw .early b{color:var(--ink)}
+.rw .ft{font-size:11.5px;color:#a38a4f;margin-top:10px;line-height:1.6}
 .home{margin-top:18px;border:1px solid var(--line);border-radius:14px;padding:16px}
 .home h4{margin:0 0 10px;font-size:15px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .home h4 input{font:inherit;font-size:13px;border:1px solid var(--line);border-radius:8px;padding:3px 6px;margin-left:auto}
@@ -101,8 +129,8 @@ function render() {
   var kN = keyOf('P4', state.f), kC = keyOf('P0', state.f);
   drawMap(document.getElementById('map'), { key: kN, selected: state.z, onPick: pick, showDelay: true });
   var box = document.getElementById('res');
-  if (!state.z) { box.innerHTML = '<div class="empty">지도에서 내 좌석 구역을 눌러 주세요.<br><small>예: 1층 18구역, 2층 47구역</small></div>'; return; }
-  if (typeof state.z === 'string') { renderAccess(box, kN, kC); return; }
+  if (!state.z) { clearInterval(RW.timer); RW.timer = null; box.innerHTML = '<div class="empty">지도에서 내 좌석 구역을 눌러 주세요.<br><small>예: 1층 18구역, 2층 47구역</small></div>'; return; }
+  if (typeof state.z === 'string') { clearInterval(RW.timer); RW.timer = null; renderAccess(box, kN, kC); return; }
   var zz = Z.filter(function (z) { return z.id === state.z; })[0];
   var n = estimate(kN, state.z), c = estimate(kC, state.z), col = GATE[n.gate];
   var max = Math.max(n.total, c.total, 1);
@@ -126,6 +154,7 @@ function render() {
     '<div class="cmp">지금처럼 나가면 <b>' + c.gate + ' ' + doorName(c.door) + '</b> 앞 줄이 약 <b>' + fmt(c.queue) + '명</b>(' + losName(c.queue) + ')이라 줄에서만 약 ' + c.wait.toFixed(1) + '분을 기다려요.<br>' +
       'EXIT NAVI 안내대로 ' + (changed ? '<b>' + n.gate + ' ' + doorName(n.door) + '</b>(으)로 나가면' : '같은 출구로 ' + (n.delay ? n.delay + '분 늦게 ' : '') + '나가면') +
       ' 줄은 약 <b>' + fmt(n.queue) + '명</b>(' + losName(n.queue) + '), 줄 대기 약 ' + n.wait.toFixed(1) + '분이에요.</div>' +
+    rewardCard(zz, n, c) +
     '<div class="annhead"><b style="font-size:14px">📢 안내 방송</b><span class="lseg" id="lseg">' + Object.keys(LANGS).map(function (k) { return '<button data-l="' + k + '"' + (k === state.lang ? ' class="on"' : '') + '>' + LANGS[k].name + '</button>'; }).join('') + '</span><button class="say" id="say">🔊 듣기</button></div>' +
     '<div class="ann">' + zoneLine(zz.id, n.gate, n.delay, state.lang, false) + '</div>' +
     homeCard(zz, n, c) +
@@ -133,6 +162,77 @@ function render() {
   box.querySelectorAll('#lseg button').forEach(function (b) { b.onclick = function () { state.lang = b.dataset.l; stopSpeak(); render(); }; });
   box.querySelector('#say').onclick = function () { speak(zoneLine(zz.id, n.gate, n.delay, state.lang, true), state.lang); };
   box.querySelector('#endt').onchange = function (e) { if (e.target.value) { state.end = e.target.value; render(); } };
+  bindReward(zz, n);
+}
+// ---------- 🎁 기다림 보상 카드: 대기 구역 카운트다운 + 무대 LED 콘텐츠 + 출발 시각 쿠폰 ----------
+var RW = { z: null, f: null, t: 0, run: false, sp: 1, last: 0, timer: null, early: false };
+function rwProgram(d) {   // 기다리는 시간(분)을 셋으로 나눠 무대 LED 프로그램 편성
+  var a = Math.round(d * 60 * 0.35), b = Math.round(d * 60 * 0.7), e = d * 60;
+  return [
+    { s: 0, e: a, ic: '🎤', t: '커튼콜 영상 · 아티스트 마지막 인사' },
+    { s: a, e: b, ic: '📸', t: '포토타임 · 객석 조명 ON, 무대가 포토존으로' },
+    { s: b, e: e, ic: '🎬', t: '앵콜 비하인드 · 다음 공연 예고' }
+  ];
+}
+function rwMMSS(sec) { sec = Math.max(0, Math.ceil(sec)); return String(Math.floor(sec / 60)).padStart(2, '0') + ':' + String(sec % 60).padStart(2, '0'); }
+function rewardCard(zz, n, c) {
+  if (!n.delay) return '';
+  if (RW.z !== zz.id || RW.f !== state.f) { RW.z = zz.id; RW.f = state.f; RW.t = 0; RW.run = false; RW.early = false; }
+  var prog = rwProgram(n.delay), code = 'EXIT-' + zz.id + '-' + clock(state.end, n.delay).replace(':', '');
+  return '<div class="rw" id="rw"><h4>🎁 기다림 보상 <small>실감형 콘텐츠 · 안내 시각을 지키면 쿠폰이 열려요</small></h4>' +
+    '<div class="top"><div class="cd">출발까지<b id="rwCd">' + rwMMSS(n.delay * 60) + '</b></div>' +
+    '<div class="ctl"><button id="rwPlay">▶ 시연: 공연 종료</button><button data-sp="1" class="on">1배속</button><button data-sp="10">10배속</button><button id="rwReset">↺</button></div></div>' +
+    '<div class="pb"><i id="rwPb"></i></div>' +
+    '<ul class="led" id="rwLed">' + prog.map(function (p, i) { return '<li data-i="' + i + '"><span class="tm">' + rwMMSS(p.s) + '~</span><span>' + p.ic + ' 지금 무대 LED: ' + p.t + '</span></li>'; }).join('') +
+      '<li data-i="go"><span class="tm">' + rwMMSS(n.delay * 60) + '</span><span>🟢 출발 — ' + n.gate + ' ' + doorName(n.door) + '(으)로 나가 주세요</span></li></ul>' +
+    '<div class="cp" id="rwCp"><div class="ic" id="rwIc">🔒</div><div class="tx" id="rwTx"><b>출발 시각(' + clock(state.end, n.delay) + ')에 쿠폰이 열려요</b><br>공식 굿즈 10% · 올림픽공원 주변 상점 할인 (예시)</div></div>' +
+    '<div style="margin-top:10px;text-align:right"><button class="say" id="rwEarly" style="background:#fff">지금 나갈래요</button></div>' +
+    '<div class="early" id="rwEarlyBox">혼자 일찍 나가면 차이가 작아 보여도, <b>구역 관객 ' + zz.seats + '명이 다 같이 지금 나가면</b> 지금처럼 출구 앞 줄이 약 <b>' + fmt(c.queue) + '명</b>(' + losName(c.queue) + ')까지 쌓여요. ' +
+      '안내대로 ' + n.delay + '분 기다리면 ' + (n.queue < 5 ? '줄이 <b>거의 없어요</b>. ' : '약 <b>' + fmt(n.queue) + '명</b>이에요. ') + '시뮬레이션에서 관객의 <b>60% 이상</b>만 안내를 따라도 위험 등급(E·F)이 0분이 돼요. 그래서 기다리는 분께 쿠폰을 드려요.<div style="margin-top:8px;text-align:right"><button class="say" id="rwStay" style="background:#fff">그래도 기다릴게요 🙂</button></div></div>' +
+    '<div class="ft">LED 프로그램과 쿠폰은 운영 예시입니다. 실제로는 주최사·공연장·주변 상권과 제휴해 출발 시각에 맞춰 전광판과 앱 알림으로 함께 운영합니다. 쿠폰 코드 <code style="font-size:11px">' + code + '</code></div></div>';
+}
+function rwDraw(n) {
+  var el = document.getElementById('rw'); if (!el) return;
+  var total = n.delay * 60, rem = total - RW.t, done = rem <= 0;
+  var cd = document.getElementById('rwCd'); cd.textContent = done ? '지금 출발!' : rwMMSS(rem); cd.className = done ? 'go' : '';
+  document.getElementById('rwPb').style.width = Math.min(100, RW.t / total * 100) + '%';
+  var prog = rwProgram(n.delay);
+  el.querySelectorAll('#rwLed li').forEach(function (li) {
+    var i = li.dataset.i, now, past;
+    if (i === 'go') { now = done; past = false; } else { var p = prog[+i]; now = !done && RW.t >= p.s && RW.t < p.e && (RW.run || RW.t > 0); past = RW.t >= p.e; }
+    li.className = now ? 'now' : (past ? 'done' : '');
+  });
+  var cp = document.getElementById('rwCp');
+  if (done && !RW.early) {
+    cp.className = 'cp open'; document.getElementById('rwIc').textContent = '🎟';
+    document.getElementById('rwTx').innerHTML = '<b>쿠폰이 열렸어요!</b><br>공식 굿즈 10% · 주변 상점 할인 (예시) · 출구를 나가며 화면을 보여 주세요';
+  } else if (!done) {
+    cp.className = 'cp'; document.getElementById('rwIc').textContent = '🔒';
+    document.getElementById('rwTx').innerHTML = '<b>출발 시각(' + clock(state.end, n.delay) + ')에 쿠폰이 열려요</b><br>공식 굿즈 10% · 올림픽공원 주변 상점 할인 (예시)' + (RW.early ? '<br><span style="color:#a8201f">지금 나가면 쿠폰은 열리지 않아요</span>' : '');
+  } else if (done && RW.early) {
+    cp.className = 'cp'; document.getElementById('rwIc').textContent = '🔒';
+    document.getElementById('rwTx').innerHTML = '<b>일찍 출발해서 쿠폰이 열리지 않았어요</b><br>다음 공연에서 안내 시각에 맞춰 나가면 받을 수 있어요';
+  }
+  var pl = document.getElementById('rwPlay'); pl.textContent = done ? '✓ 출발 시각' : (RW.run ? '❚❚ 일시정지' : (RW.t > 0 ? '▶ 이어서' : '▶ 시연: 공연 종료'));
+}
+function bindReward(zz, n) {
+  if (!document.getElementById('rw')) { clearInterval(RW.timer); RW.timer = null; return; }
+  document.getElementById('rwPlay').onclick = function () { if (RW.t >= n.delay * 60) return; if (RW.early) { RW.early = false; document.getElementById('rwEarlyBox').className = 'early'; } RW.run = !RW.run; RW.last = performance.now(); rwDraw(n); };
+  document.getElementById('rwReset').onclick = function () { RW.t = 0; RW.run = false; RW.early = false; document.getElementById('rwEarlyBox').className = 'early'; rwDraw(n); };
+  document.querySelectorAll('#rw [data-sp]').forEach(function (b) {
+    b.classList.toggle('on', +b.dataset.sp === RW.sp);
+    b.onclick = function () { RW.sp = +b.dataset.sp; document.querySelectorAll('#rw [data-sp]').forEach(function (x) { x.classList.toggle('on', x === b); }); };
+  });
+  document.getElementById('rwEarly').onclick = function () { RW.early = true; RW.run = false; document.getElementById('rwEarlyBox').className = 'early on'; rwDraw(n); };
+  document.getElementById('rwStay').onclick = function () { RW.early = false; document.getElementById('rwEarlyBox').className = 'early'; rwDraw(n); };
+  if (RW.early) document.getElementById('rwEarlyBox').className = 'early on';
+  clearInterval(RW.timer);
+  RW.timer = setInterval(function () {
+    var now = performance.now(), dt = (now - RW.last) / 1000; RW.last = now;
+    if (RW.run) { RW.t = Math.min(RW.t + dt * RW.sp, n.delay * 60); if (RW.t >= n.delay * 60) RW.run = false; }
+    rwDraw(n);
+  }, 200);
+  RW.last = performance.now(); rwDraw(n);
 }
 function homeCard(zz, n, c) {
   var tn = 4 + n.total, tc = 4 + c.total, kN = keyOf('P4', state.f), kC = keyOf('P0', state.f);
@@ -165,5 +265,6 @@ var m = location.hash.match(/z=(W[123]|\d+)/); if (m) { if (m[1].charAt(0) === '
 sel.value = state.z || ''; render();
 </script>
 <script src="js/nav.js"></script>
+<script src="js/tour.js?v=1"></script>
 </body>
 </html>

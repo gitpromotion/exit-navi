@@ -7,6 +7,18 @@
 <meta name="description" content="실감형 콘텐츠와 공공데이터로 설계한 KSPO DOME 구역별 시차 퇴장 안내 서비스">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
 <link rel="stylesheet" href="css/site.css">
+<style>
+.tour{list-style:none;margin:22px 0 0;padding:0;display:grid;grid-template-columns:repeat(5,1fr);gap:12px;counter-reset:t}
+.tour li{counter-increment:t}
+.tour a{display:block;height:100%;background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px;text-decoration:none;color:inherit;transition:border-color .15s,transform .15s}
+.tour a:hover{border-color:var(--ink);transform:translateY(-2px)}
+.tour a::before{content:counter(t);display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--ink);color:#fff;font-weight:900;font-size:13px}
+.tour b{display:block;font-size:15px;margin:10px 0 4px}
+.tour span{font-size:13px;color:var(--ink2);line-height:1.6}
+.tour em{display:block;font-style:normal;font-size:12px;color:var(--ink3);margin-top:8px}
+@media(max-width:960px){.tour{grid-template-columns:1fr 1fr}}
+@media(max-width:560px){.tour{grid-template-columns:1fr}}
+</style>
 </head>
 <body>
 
@@ -20,6 +32,7 @@
         <div class="btns">
           <a class="btn light" href="find.html">내 구역 출구 찾기 →</a>
           <a class="btn ghost" href="sim.html">3D 시뮬레이션 보기</a>
+          <a class="btn ghost" href="#tour">▶ 3분 둘러보기</a>
         </div>
       </div>
       <div class="shot"><img src="img/pres.jpg" alt="EXIT NAVI 3D 시뮬레이션 발표 모드: 현재 방식과 최적 방식을 나란히 비교한 화면"></div>
@@ -32,6 +45,16 @@
     </div>
   </div>
 </header>
+
+<section id="tour" style="padding-top:56px;padding-bottom:56px">
+  <div class="wrap">
+    <p class="eyebrow">처음 오셨나요?</p>
+    <h2 class="t">3분 둘러보기</h2>
+    <p class="lead">핵심 화면 5개를 순서대로 안내해 드려요. 각 화면 아래에 무엇을 눌러 보면 되는지 안내 막대가 따라 나옵니다.</p>
+    <ol class="tour" id="tourList"></ol>
+    <div class="btns" style="margin-top:18px"><a class="btn" id="tourStart" href="sim.html?tour=1">▶ 둘러보기 시작 (약 3분)</a></div>
+  </div>
+</section>
 
 <section>
   <div class="wrap problem">
@@ -90,10 +113,10 @@
     <div class="cards">
       <a class="card" href="operator.html"><span class="n">비상 모드</span><h3>출구가 막혀도 바로 재배정</h3><p>출구 1곳이 폐쇄되면 남은 8곳으로 다시 최적화합니다. 9개 출구 어느 곳이 막혀도 최대 줄 2,500명(F등급) → 170명 이하로 유지됩니다.</p><span class="go">비상 모드 열기 →</span></a>
       <a class="card" href="find.html#z=18"><span class="n">귀갓길</span><h3>출구에서 지하철역까지</h3><p>귀가 관객의 47%가 지하철, 버스는 1% 미만입니다. 지하철 관객의 95%가 쓰는 올림픽공원역 기준으로 내 도착 시각과 역 도착 예보를 보여 줍니다.</p><span class="go">귀갓길 보기 →</span></a>
-      <a class="card" href="forecast.html"><span class="n">혼잡 예보</span><h3>다가오는 공연, 미리 알려 드려요</h3><p>12월~2월 KSPO DOME 공연 25회를 관객 규모 예측 모델로 분석해 회차별 퇴장 혼잡을 날씨 예보처럼 보여 줍니다.</p><span class="go">예보 보기 →</span></a>
+      <a class="card" href="forecast.html"><span class="n">혼잡 예보</span><h3>다가오는 공연, 미리 알려 드려요</h3><p>2026년 11월~2027년 2월 KSPO DOME 공연 25회를 관객 규모 예측 모델로 분석해 회차별 퇴장 혼잡을 날씨 예보처럼 보여 줍니다.</p><span class="go">예보 보기 →</span></a>
       <a class="card" href="find.html#z=W2"><span class="n">교통약자</span><h3>휠체어석은 먼저, 계단 없이</h3><p>2층 C블록 뒤편 장애인석 82석은 같은 층 2-2문으로 종료 직후 우선 퇴장합니다. 약 1분 안에 건물 밖, 기존보다 약 20분 빨라요.</p><span class="go">우선 퇴장 보기 →</span></a>
       <a class="card" href="operator.html"><span class="n">다국어 · 음성</span><h3>4개 언어 안내 방송</h3><p>한국어·영어·일본어·중국어 방송 문구를 자동으로 만들고, 버튼 하나로 실제 음성으로 들려줍니다.</p><span class="go">방송 들어 보기 →</span></a>
-      <a class="card" href="sim.html"><span class="n">기다리면 보상</span><h3>60%만 따라도 위험 0분</h3><p>안내를 따르는 관객이 60%를 넘으면 위험 등급(E·F)이 사라집니다. 기다리는 구역에 실감형 콘텐츠(LED 앵콜 비하인드·포토타임)와 혜택을 주어 이 선을 넘깁니다.</p><span class="go">곡선 보기 →</span></a>
+      <a class="card" href="find.html#z=16"><span class="n">기다림 보상 · 실감형 콘텐츠</span><h3>기다리는 시간을 즐거운 시간으로</h3><p>안내를 따르는 관객이 60%를 넘으면 위험 등급(E·F)이 사라집니다. 대기 구역에는 카운트다운과 함께 무대 LED 콘텐츠(커튼콜·포토타임·앵콜 비하인드)를 보여 주고, 안내 시각에 출발하면 쿠폰이 열립니다.</p><span class="go">보상 카드 체험 →</span></a>
       <a class="card" href="operator.html"><span class="n">전광판 모드</span><h3>구역별 신호등과 카운트다운</h3><p>운영자 안내에서 버튼 하나로 대형 스크린 화면이 됩니다. 🔴 대기 · 🟡 곧 출발 · 🟢 지금 출발, 출발 시각이 되면 자동으로 방송합니다.</p><span class="go">전광판 열기 →</span></a>
       <a class="card" href="qr.html"><span class="n">좌석 QR</span><h3>찍으면 내 출구가 바로</h3><p>52개 구역과 장애인석마다 QR을 붙이면 관객은 입력 없이 카메라로 찍기만 하면 됩니다. 출구·출발 시각·음성 안내가 바로 열려요.</p><span class="go">QR 모음 보기 →</span></a>
     </div>
@@ -125,6 +148,15 @@
   </div>
 </section>
 
+<script src="js/tour.js?v=1"></script>
+<script>
+(function () {
+  var T = window.EXIT_TOUR, short = ['지금처럼과 EXIT NAVI를 나란히 재생', '내 출구·음성·기다림 보상 카드', '전광판 신호등과 비상 모드', '다가오는 공연 25회 혼잡 등급', '공공데이터와 계산 과정'];
+  document.getElementById('tourList').innerHTML = T.steps.map(function (s, i) {
+    return '<li><a href="' + T.link(i) + '"><b>' + s.title + '</b><span>' + short[i] + '</span><em>약 ' + s.time + '</em></a></li>';
+  }).join('');
+})();
+</script>
 <script src="js/nav.js"></script>
 </body>
 </html>
