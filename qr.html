@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>좌석 QR · EXIT NAVI</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
+<link rel="stylesheet" href="css/site.css">
+<style>
+.qtool{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:4px 0 22px}
+.qtool .seg{display:inline-flex;background:var(--soft);border-radius:10px;padding:3px;gap:2px}
+.qtool .seg button{font:inherit;border:0;background:transparent;font-size:14px;padding:6px 12px;cursor:pointer;border-radius:8px;color:var(--ink)}
+.qtool .seg button.on{background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.12);font-weight:700}
+.qbtn{font:inherit;font-size:14px;border:1px solid var(--ink);background:var(--ink);color:#fff;border-radius:10px;padding:8px 14px;cursor:pointer}
+.qgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;padding-bottom:60px}
+.qc{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px;text-align:center;break-inside:avoid}
+.qc.acc{border-color:#99d5cb;background:#f2faf8}
+.qc .zn{font-size:22px;font-weight:900;letter-spacing:-.5px}
+.qc .zn small{display:block;font-size:12px;font-weight:500;color:var(--ink2);letter-spacing:0}
+.qc svg{width:100%;max-width:150px;height:auto;display:block;margin:8px auto}
+.qc .hint{font-size:12px;color:var(--ink2);line-height:1.5}
+.qc a{font-size:12px;color:var(--ink2)}
+.how{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:0 0 26px}
+.how div{background:var(--soft);border-radius:14px;padding:14px 16px;font-size:14px;line-height:1.6}
+.how b{display:block;font-size:15px;margin-bottom:2px}
+@media(max-width:760px){.how{grid-template-columns:1fr}}
+@media print{nav,footer,.qtool,.how,.lead,.eyebrow{display:none!important}.qgrid{grid-template-columns:repeat(4,1fr);gap:8px}.qc{border:1px solid #999}body{background:#fff}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div style="padding-top:36px">
+    <p class="eyebrow">현장 도구</p>
+    <h2 class="t" style="margin-bottom:6px">좌석 QR — 찍으면 내 출구가 바로</h2>
+    <p class="lead" style="margin-bottom:16px">구역마다 QR을 좌석 등받이·통로 기둥·티켓에 붙여 두면, 관객은 아무것도 입력하지 않고 카메라로 찍기만 하면 됩니다. <b>내 출구 찾기</b> 화면이 그 구역으로 바로 열려 출구·출발 시각·음성 안내를 보여 줍니다.</p>
+    <div class="how">
+      <div><b>① 찍기</b>휴대폰 기본 카메라로 좌석의 QR을 찍어요. 앱 설치가 필요 없어요.</div>
+      <div><b>② 내 구역 자동 선택</b>구역 번호가 주소에 들어 있어서(예: <code>find.html#z=12</code>) 바로 내 구역 안내가 떠요.</div>
+      <div><b>③ 출발 시각·음성</b>"종료 후 ○분, ○문으로" 안내와 4개 언어 음성을 들을 수 있어요.</div>
+    </div>
+    <div class="qtool">
+      <div class="seg" id="qf"><button data-f="all" class="on">전체</button><button data-f="0">1층 1~22구역</button><button data-f="1">2층 23~52구역</button><button data-f="w">♿ 장애인석</button></div>
+      <button class="qbtn" onclick="window.print()">🖨 인쇄하기</button>
+    </div>
+  </div>
+  <div class="qgrid" id="qg"></div>
+</div>
+<script src="js/data_qr.js?v=1"></script>
+<script>
+(function () {
+  var Q = window.KSPO_QR, n = Q.n;
+  function svg(bits) {
+    var q = 3, sz = n + q * 2, d = '';
+    for (var r = 0; r < n; r++) for (var c = 0; c < n; c++) if (bits.charAt(r * n + c) === '1') d += 'M' + (c + q) + ' ' + (r + q) + 'h1v1h-1z';
+    return '<svg viewBox="0 0 ' + sz + ' ' + sz + '" shape-rendering="crispEdges"><rect width="' + sz + '" height="' + sz + '" fill="#fff"/><path d="' + d + '" fill="#0b0b0b"/></svg>';
+  }
+  var acc = { W1: '5~7구역 뒤', W2: '8구역 뒤', W3: '9~11구역 뒤' };
+  var items = Object.keys(Q.codes).map(function (k) {
+    var w = k.charAt(0) === 'W', num = +k;
+    return { k: k, grp: w ? 'w' : (num <= 22 ? '0' : '1'),
+      name: w ? '♿ 장애인석' : k + '구역', sub: w ? '2층 ' + acc[k] : (num <= 22 ? '1층' : '2층') };
+  });
+  function draw(f) {
+    document.getElementById('qg').innerHTML = items.filter(function (it) { return f === 'all' || it.grp === f; }).map(function (it) {
+      var url = Q.base + it.k;
+      return '<div class="qc' + (it.grp === 'w' ? ' acc' : '') + '"><div class="zn">' + it.name + '<small>' + it.sub + '</small></div>' + svg(Q.codes[it.k]) +
+        '<div class="hint">찍으면 내 출구·출발 시각 안내<br>Scan for your exit</div><a href="find.html#z=' + it.k + '">화면에서 열기 →</a></div>';
+    }).join('');
+  }
+  document.querySelectorAll('#qf button').forEach(function (b) {
+    b.onclick = function () { document.querySelectorAll('#qf button').forEach(function (x) { x.classList.toggle('on', x === b); }); draw(b.dataset.f); };
+  });
+  draw('all');
+})();
+</script>
+<script src="js/nav.js"></script>
+</body>
+</html>

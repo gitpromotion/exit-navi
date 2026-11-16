@@ -57,6 +57,10 @@ canvas{display:block;touch-action:none}
 .rk .bar{height:9px;border-radius:3px;background:var(--soft);overflow:hidden} .rk .bar i{display:block;height:100%;border-radius:3px}
 .rk .n{text-align:right;font-variant-numeric:tabular-nums} .rk .g{font-weight:700;text-align:center;border-radius:4px;color:#fff;font-size:11px;padding:1px 0}
 .rk .sub2{grid-column:2 / 5;font-size:11px;color:var(--ink2);margin-top:-2px}
+.reward{margin-top:10px;border:1px solid #f0d9a8;background:#fffaf0;border-radius:10px;padding:10px 12px;font-size:12.5px;line-height:1.6;color:#4a3a12}
+.reward b.h{font-size:13.5px;color:#0b0b0b}
+.reward svg{display:block;width:100%;height:auto;margin:6px 0 4px}
+.reward ul{margin:4px 0 0;padding-left:16px}
 .info{background:var(--soft);border-radius:10px;padding:10px 12px;font-size:13px;line-height:1.6;min-height:60px}
 .info .row{display:flex;justify-content:space-between;gap:8px} .info .row span:first-child{color:var(--ink2)}
 .small{width:100%;height:120px;margin-top:8px;background:#fff;border:1px solid var(--line);border-radius:8px}
@@ -109,6 +113,16 @@ canvas{display:block;touch-action:none}
     <div class="seg" id="segF"><button data-v="0">0명</button><button data-v="2000" class="on">2,000명</button><button data-v="4000">4,000명</button></div>
     <div class="lbl">만약에 — 안내를 따르는 관객 비율 (최적 계획)</div>
     <div class="seg" id="segC"><button data-v="100" class="on">100%</button><button data-v="70">70%</button><button data-v="50">50%</button></div>
+    <div class="reward" id="reward">
+      <b class="h">🎁 기다리면 보상 — 안내 따르는 비율 올리기</b><br>
+      안내를 따르는 관객이 <b>60%만 넘으면</b> 위험 등급(E·F)이 0분이 돼요. 기다리는 구역에 보상을 주면 이 선을 넘길 수 있어요.
+      <svg id="rwSvg" viewBox="0 0 320 150" role="img" aria-label="안내 따르는 비율별 한 출구 최대 줄"></svg>
+      <ul>
+        <li><b>실감형 콘텐츠:</b> 대기 구역은 무대 LED로 앵콜 비하인드·포토타임</li>
+        <li><b>혜택:</b> 안내 시각에 맞춰 나가면 굿즈·주변 상권 할인</li>
+        <li><b>알림:</b> "지금 나가면 줄 ○명, 4분 뒤면 ○명"을 함께 보여 주기</li>
+      </ul>
+    </div>
 
     <div class="lbl">이 조건의 결과</div>
     <div class="kpis">
@@ -352,8 +366,20 @@ const vC=View(document.getElementById('cC'),{key:keyA(),onchange:()=>drawAna(),o
 function toggle(o){const k=vC.sels.findIndex(x=>x.type===o.type&&x.id===o.id);if(k>=0){vC.sels.splice(k,1);vC.sel=vC.sels[vC.sels.length-1]||null;}else{vC.sels.push(o);vC.sel=o;}}
 function seg(id,cb){document.querySelectorAll(`#${id} button`).forEach(b=>b.onclick=()=>{if(b.disabled)return;document.querySelectorAll(`#${id} button`).forEach(x=>x.classList.toggle('on',x===b));cb(b.dataset.v);});}
 seg('segM',v=>{mth=v;syncC();refresh();});seg('segF',v=>{flr=+v;refresh();});seg('segC',v=>{cpl=+v;refresh();});
+
+// ---- 기다리면 보상: 순응률별 결과 (out/S12-1_순응률별_효과.csv, 플로어 2,000명, 순응률 반영 재최적화) ----
+const RW=[[0,2292,21.7],[10,1923,18.9],[20,1563,16.1],[30,1216,13.2],[40,885,10.1],[50,576,6.5],[60,299,0],[70,193,0],[80,193,0],[90,198,0],[100,211,0]];
+function drawReward(){const g=document.getElementById('rwSvg');if(!g)return;const L=30,R=302,T=10,B=118,X=c=>L+(R-L)*c/100,Y=q=>B-(B-T)*q/2400;
+let h='';[0,1000,2000].forEach(v=>{h+=`<line x1="${L}" x2="${R}" y1="${Y(v)}" y2="${Y(v)}" stroke="#ece6d6"/><text x="${L-4}" y="${Y(v)+3}" font-size="9" text-anchor="end" fill="#8a7a55">${v?v/1000+'천':'0'}</text>`;});
+h+=`<rect x="${X(60)}" y="${T}" width="${R-X(60)}" height="${B-T}" fill="#1baf7a" opacity=".09"/><line x1="${X(60)}" x2="${X(60)}" y1="${T}" y2="${B}" stroke="#1baf7a" stroke-dasharray="3 3"/>`;
+h+=`<text x="${X(60)+4}" y="${T+10}" font-size="9.5" fill="#0f6b48" font-weight="700">60%↑ 위험 0분</text>`;
+h+=`<polyline fill="none" stroke="#0b0b0b" stroke-width="2" stroke-linejoin="round" points="${RW.map(r=>X(r[0])+','+Y(r[1])).join(' ')}"/>`;
+RW.forEach(r=>{const cur=mth==='P4'&&r[0]===cpl, p0=mth==='P0'&&r[0]===0;h+=`<circle cx="${X(r[0])}" cy="${Y(r[1])}" r="${cur||p0?5:2.5}" fill="${r[2]>0?'#e34948':'#1baf7a'}" stroke="#fff" stroke-width="${cur||p0?2:1}"><title>${r[0]}% → 최대 줄 ${r[1].toLocaleString()}명, 위험 ${r[2]}분</title></circle>`;});
+[0,50,100].forEach(c=>h+=`<text x="${X(c)}" y="${B+12}" font-size="9" text-anchor="middle" fill="#8a7a55">${c}%</text>`);
+h+=`<text x="${(L+R)/2}" y="${B+26}" font-size="9.5" text-anchor="middle" fill="#4a3a12">안내 따르는 비율 → 한 출구 최대 줄(명)</text>`;
+g.innerHTML=h;}
 function syncC(){document.querySelectorAll('#segC button').forEach(b=>b.disabled=mth!=='P4');}
-function refresh(){vC.key=keyA();const m=sc(vC.key).summary;document.getElementById('k1').textContent=fmt(m.maxq)+'명';document.getElementById('k2').textContent=(m.wait+m.seat).toFixed(1)+'분';
+function refresh(){drawReward();vC.key=keyA();const m=sc(vC.key).summary;document.getElementById('k1').textContent=fmt(m.maxq)+'명';document.getElementById('k2').textContent=(m.wait+m.seat).toFixed(1)+'분';
   document.getElementById('k3').textContent=m.los;document.getElementById('k4').textContent=m.clear90+'분';renderAnn();drawAna();}
 function renderAnn(){const a=announcements(vC.key);document.getElementById('annlist').innerHTML=a.length?a.map(x=>`<div data-t="${x.t}">${x.text}</div>`).join(''):'<div>안내 없음 — 관객이 각자 가장 가까운 출구로 나가요.</div>';}
 function renderRank(){const k=vC.key,S=sc(k),[wi]=maxQ(k,tA);const rows=DOORS.map((d,i)=>{const tot=S.out.reduce((a,r)=>a+r[i],0);return {d,i,q:qAt(k,i,tA),tot,ex:cumOut(k,i,tA),f:outAt(k,i,tA)};}).sort((a,b)=>(b.q-a.q)||((b.tot-b.ex)-(a.tot-a.ex)));
