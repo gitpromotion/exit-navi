@@ -91,7 +91,7 @@ canvas{display:block;touch-action:none}
     <div class="tlrow">
       <div class="ctrl"><button class="big on" id="pPlay">▶ 재생</button><button id="pReset">↺ 처음으로</button></div>
       <canvas id="tl"></canvas>
-      <div class="ctrl"><button id="pSpeed">속도 1×</button><button id="toAna">분석 모드 →</button></div>
+      <div class="ctrl"><button id="pStation">🚇 역까지 보기</button><button id="pSpeed">속도 1×</button><button id="toAna">분석 모드 →</button></div>
     </div>
   </div>
 </div>
@@ -99,7 +99,7 @@ canvas{display:block;touch-action:none}
 <!-- ============ 분석 모드 ============ -->
 <div class="mode" id="ana">
   <div class="stage"><canvas id="cC"></canvas>
-    <div class="views"><button data-v="tilt" class="on">비스듬히</button><button data-v="top">위에서</button><button data-v="low">낮게</button></div>
+    <div class="views"><button data-v="tilt" class="on">비스듬히</button><button data-v="top">위에서</button><button data-v="low">낮게</button><button id="aStation" style="margin-left:6px">🚇 역까지 보기</button></div>
     <div class="hint">▶ 재생 · 드래그: 회전 · 휠: 확대 · 구역·출구를 눌러 선택(여러 개 가능)</div>
   </div>
   <aside class="panel">
@@ -154,6 +154,10 @@ const doorIdx={}; DOORS.forEach((d,i)=>doorIdx[d.id]=i);
 const byAng=[...DOORS.keys()].sort((a,b)=>DOORS[a].ang-DOORS[b].ang);
 const RING=[{r0:25,r1:42,z0:1,z1:8,base:0},{r0:45,r1:60,z0:11,z1:19,base:9}];
 const R_CONC=63.5,Z_CONC=5,R_DOOR=69,PER_DOT=30,QM=3.2;
+// 역까지 보기: 올림픽공원역(5·9호선) — 실제 약 430m(도보 6분)를 화면에서는 축약해 표시, 방향은 예시
+const ST={on:false,ang:302,r:104,ring:84,walk:D.walk_station,share:D.subway_share,olympic:0.946};
+const stRate=(k,t)=>t<ST.walk?0:DOORS.reduce((s,d,i)=>s+outAt(k,i,t-ST.walk),0)*ST.share*ST.olympic;
+const stCum=(k,t)=>t<ST.walk?0:cumOut(k,undefined,t-ST.walk)*ST.share*ST.olympic;
 const rad=a=>a*Math.PI/180, P=(r,a,z)=>[r*Math.cos(rad(a)),r*Math.sin(rad(a)),z];
 const hex2rgb=h=>{h=h.replace('#','');return [0,2,4].map(i=>parseInt(h.slice(i,i+2),16));};
 const mix=(h,w,k)=>{const a=hex2rgb(h),b=hex2rgb(w);return `rgb(${a.map((v,i)=>Math.round(v+(b[i]-v)*k)).join(',')})`;};
@@ -194,7 +198,7 @@ function View(canvas,opt){
   const ctx=canvas.getContext('2d');let W=0,H=0,dpr=1;const self={key:opt.key,sels:[],sel:null,showRoutes:false,showFlow:true,hits:[],cam:opt.cam||cam};
   self.resize=()=>{dpr=window.devicePixelRatio||1;const b=canvas.getBoundingClientRect();W=b.width;H=b.height;canvas.width=W*dpr;canvas.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);};
   function proj(x,y,z){const c=self.cam,cy=Math.cos(c.yaw),sy=Math.sin(c.yaw),X=x*cy-y*sy,Y=x*sy+y*cy,Zz=z-6,cp=Math.cos(c.pitch),sp=Math.sin(c.pitch);
-    const up=Y*sp+Zz*cp,depth=Y*cp-Zz*sp,d=230+depth,f=Math.min(W*0.95,H*1.1)*1.32*c.zoom*(opt.scale||1);return [W/2+X*f/d,H*0.55-up*f/d,d];}
+    const up=Y*sp+Zz*cp,depth=Y*cp-Zz*sp,d=230+depth,f=Math.min(W*0.95,H*1.1)*1.32*c.zoom*(opt.scale||1);return [W/2+X*f/d,H*(ST.on?0.40:0.55)-up*f/d,d];}
   self.proj=proj;
   const isSel=(type,id)=>self.sels.some(x=>x.type===type&&x.id===id);
   self.isSel=isSel;
@@ -205,9 +209,14 @@ function View(canvas,opt){
     for(let i=1;i<pts.length;i++){const a=pts[i-1],b=pts[i];cum.push(cum[i-1]+Math.hypot(b[0]-a[0],b[1]-a[1],b[2]-a[2]));}
     return {pts,cum,doorLen:cum[cum.length-2],total:cum[cum.length-1],di:doorIdx[door],gate:d.gate};}
   function at(p,L){L=Math.max(0,Math.min(p.total,L));let i=1;while(i<p.cum.length-1&&p.cum[i]<L)i++;const a=p.pts[i-1],b=p.pts[i],f=(L-p.cum[i-1])/Math.max(1e-9,p.cum[i]-p.cum[i-1]);return [a[0]+(b[0]-a[0])*f,a[1]+(b[1]-a[1])*f,a[2]+(b[2]-a[2])*f];}
+  const stPaths={};
+  function stPath(door){if(stPaths[door])return stPaths[door];const d=DOORS[doorIdx[door]];const pts=[P(R_DOOR+7,d.ang,Z_CONC+0.4),P(ST.ring,d.ang,0.4)];
+    const diff=((ST.ang-d.ang+540)%360)-180,n=Math.max(2,Math.ceil(Math.abs(diff)/4));for(let k=1;k<=n;k++)pts.push(P(ST.ring,d.ang+diff*k/n,0.4));
+    pts.push(P(ST.r-5,ST.ang,0.4));const cum=[0];for(let i=1;i<pts.length;i++){const a=pts[i-1],b=pts[i];cum.push(cum[i-1]+Math.hypot(b[0]-a[0],b[1]-a[1],b[2]-a[2]));}
+    return stPaths[door]={pts,cum,total:cum[cum.length-1]};}
   function buildDots(){const S=sc(self.key),c=S.c/100;dots=[];
     const add=(z,door,dl,n,walk,gray)=>{const path=routePts(z,door);const m=Math.max(0,Math.round(n/PER_DOT));
-      for(let k=0;k<m;k++){const u=(k+0.5)/m,leave=dl+4*Math.exp(0.8*invN(u)),ta=leave+walk,wait=qAt(self.key,path.di,Math.min(D.tmax,ta))/CAP;dots.push({path,leave,ta,te:ta+wait,walk,gray,jit:Math.sin(z.id*91.7+k*12.9+(gray?7:0))*0.5});}};
+      for(let k=0;k<m;k++){const u=(k+0.5)/m,leave=dl+4*Math.exp(0.8*invN(u)),ta=leave+walk,wait=qAt(self.key,path.di,Math.min(D.tmax,ta))/CAP;const hh=Math.abs(Math.sin(z.id*12.9898+k*78.233+(gray?3.1:0))*43758.5453)%1;dots.push({path,leave,ta,te:ta+wait,walk,gray,st:hh<ST.share,sp:stPath(door),jit:Math.sin(z.id*91.7+k*12.9+(gray?7:0))*0.5});}};
     Z.forEach(z=>{const n=ppl(z,S.floor);add(z,S.assign[z.id],S.delay[z.id],n*c,S.walk[z.id],false);if(c<1)add(z,D.scen['P0_'+S.floor+'_100'].assign[z.id],0,n*(1-c),S.walknear[z.id],true);});flowKey=self.key;}
   self.draw=(t)=>{if(!W)return;ctx.clearRect(0,0,W,H);const S=sc(self.key),polys=[];
     const poly=(pts,fill,stroke,id,lw)=>{const p=pts.map(q=>proj(...q));return {p,fill,stroke,id,lw:lw||0.6,depth:p.reduce((s,q)=>s+q[2],0)/p.length};};
@@ -234,10 +243,28 @@ function View(canvas,opt){
     const rz=self.showRoutes?Z:Z.filter(z=>isSel('zone',z.id)||isSel('door',S.assign[z.id]));
     rz.forEach(z=>{const p=routePts(z,S.assign[z.id]),pp=p.pts.slice(0,-1).map(q=>proj(...q));ctx.beginPath();pp.forEach((q,i)=>i?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1]));
       ctx.strokeStyle=GATE[p.gate];ctx.lineWidth=self.showRoutes&&!isSel('zone',z.id)&&!isSel('door',S.assign[z.id])?1.2:3;ctx.globalAlpha=self.showRoutes?0.75:1;ctx.stroke();ctx.globalAlpha=1;});
+    // 역까지 보기: 길·역 건물
+    if(ST.on){ctx.save();ctx.setLineDash([4,5]);ctx.strokeStyle='rgba(42,120,214,.45)';ctx.lineWidth=2;ctx.beginPath();
+      for(let a=0;a<=360;a+=5){const p=proj(...P(ST.ring,a,0.2));a?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]);}ctx.stroke();ctx.setLineDash([]);
+      const e1=proj(...P(ST.ring,ST.ang,0.2)),e2=proj(...P(ST.r-5,ST.ang,0.2));ctx.strokeStyle='rgba(42,120,214,.7)';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(e1[0],e1[1]);ctx.lineTo(e2[0],e2[1]);ctx.stroke();
+      const rate=stRate(self.key,t),h=3+rate/900*26,c0=P(ST.r,ST.ang,0),ux=[Math.cos(rad(ST.ang)),Math.sin(rad(ST.ang))],vx=[-ux[1],ux[0]],sz=7;
+      const cr=[[-1,-1],[1,-1],[1,1],[-1,1]].map(([a,b])=>[c0[0]+(ux[0]*a+vx[0]*b)*sz,c0[1]+(ux[1]*a+vx[1]*b)*sz]);
+      const fillOf=rate>600?'#e34948':rate>300?'#eda100':'#2a78d6',bot=cr.map(q=>[q[0],q[1],0]),top=cr.map(q=>[q[0],q[1],h]);
+      const faces=[0,1,2,3].map(k=>{const k2=(k+1)%4,f=[bot[k],bot[k2],top[k2],top[k]].map(q=>proj(...q));return {f,d:f.reduce((s,q)=>s+q[2],0)/4,k};}).sort((a,b)=>b.d-a.d);
+      faces.forEach(o=>{ctx.beginPath();o.f.forEach((q,i)=>i?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1]));ctx.closePath();ctx.fillStyle=shade(fillOf,0.72+0.07*o.k);ctx.fill();ctx.strokeStyle='rgba(0,0,0,.25)';ctx.lineWidth=0.6;ctx.stroke();});
+      const tp=top.map(q=>proj(...q));ctx.beginPath();tp.forEach((q,i)=>i?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1]));ctx.closePath();ctx.fillStyle=fillOf;ctx.fill();
+      const lp=proj(...P(ST.r,ST.ang,h+2));ctx.textAlign='center';ctx.textBaseline='bottom';
+      const l1='🚇 올림픽공원역 (5·9호선)',l2=`지금 1분에 ${fmt(rate)}명 도착 · 누적 ${fmt(stCum(self.key,t))}명`;
+      ctx.font='700 12px "Noto Sans KR",sans-serif';const w=Math.max(ctx.measureText(l1).width,(ctx.font='500 11px "Noto Sans KR",sans-serif',ctx.measureText(l2).width))+16;
+      ctx.fillStyle='rgba(255,255,255,.94)';ctx.strokeStyle='rgba(0,0,0,.12)';ctx.beginPath();ctx.roundRect?ctx.roundRect(lp[0]-w/2,lp[1]-40,w,36,7):ctx.rect(lp[0]-w/2,lp[1]-40,w,36);ctx.fill();ctx.stroke();
+      ctx.fillStyle='#0b0b0b';ctx.font='700 12px "Noto Sans KR",sans-serif';ctx.fillText(l1,lp[0],lp[1]-22);ctx.fillStyle=rate>600?'#c62f2e':'#52514e';ctx.font='500 11px "Noto Sans KR",sans-serif';ctx.fillText(l2,lp[0],lp[1]-7);
+      const nb=proj(...P(ST.r+10,ST.ang,0));ctx.textBaseline='top';ctx.fillStyle='#8a8983';ctx.font='500 10px "Noto Sans KR",sans-serif';ctx.fillText('역 방향·거리는 예시 (실제 도보 약 '+ST.walk+'분)',nb[0],nb[1]);
+      ctx.restore();}
     // 사람 흐름
     if(self.showFlow){if(flowKey!==self.key)buildDots();ctx.save();
       dots.forEach(o=>{if(t<o.leave)return;let pos,al=0.95,r=3;
         if(t<o.ta)pos=at(o.path,o.path.doorLen*(t-o.leave)/o.walk);else if(t<o.te){pos=at(o.path,o.path.doorLen-(o.te-t)*QM);r=3.3;}
+        else if(ST.on&&o.st){const f=(t-o.te)/ST.walk;if(f>1)return;pos=at(o.sp,o.sp.total*f);r=4.4;al=f>0.9?0.9*(1-f)/0.1:0.9;}
         else{const f=(t-o.te)/0.6;if(f>1)return;pos=at(o.path,o.path.doorLen+(o.path.total-o.path.doorLen)*f);al=0.95*(1-f);}
         const p=proj(pos[0]+o.jit,pos[1]-o.jit,pos[2]);ctx.globalAlpha=al;ctx.fillStyle=o.gray?GRAY:GATE[o.path.gate];ctx.beginPath();ctx.arc(p[0],p[1],r*Math.min(1.4,self.cam.zoom)*(opt.dot||1),0,Math.PI*2);ctx.fill();ctx.lineWidth=0.6;ctx.strokeStyle='rgba(255,255,255,.9)';ctx.stroke();});
       ctx.restore();}
@@ -311,6 +338,10 @@ function playToggle(){playP=!playP;pPlay.textContent=playP?'❚❚ 일시정지'
 function tickP(now,my){if(!playP||my!==loopP)return;if(lastP===null)lastP=now;const dt=Math.max(0,Math.min(0.1,(now-lastP)/1000));lastP=now;
   let nt=tP+dt*0.9*speed;if(nt>=30){nt=30;playP=false;pPlay.textContent='▶ 재생';}setTP(nt);if(playP)requestAnimationFrame(n=>tickP(n,my));}
 pPlay.onclick=playToggle;document.getElementById('pReset').onclick=()=>{playP=false;pPlay.textContent='▶ 재생';setTP(0);};
+function setStation(on){ST.on=on;['pStation','aStation'].forEach(id=>{const b=document.getElementById(id);if(b){b.classList.toggle('on',on);b.textContent=on?'🚇 역까지 보기 ✓':'🚇 역까지 보기';}});
+  presCam.zoom=on?0.62:1;cam.zoom=on?0.62:1;drawPres();drawAna();}
+document.getElementById('pStation').onclick=()=>setStation(!ST.on);
+document.getElementById('aStation').onclick=e=>{e.stopPropagation();setStation(!ST.on);};
 document.getElementById('pSpeed').onclick=e=>{speed=speed===1?2:speed===2?0.5:1;e.target.textContent='속도 '+speed+'×';};
 document.getElementById('toAna').onclick=()=>setMode('ana');
 
@@ -372,7 +403,7 @@ function tickA(now,my){if(!playA||my!==loopA)return;if(lastA===null)lastA=now;co
 document.getElementById('clr').onclick=()=>{vC.sels=[];vC.sel=null;drawAna();};
 document.getElementById('flow').onchange=e=>{vC.showFlow=e.target.checked;drawAna();};
 document.getElementById('routes').onchange=e=>{vC.showRoutes=e.target.checked;drawAna();};
-document.querySelectorAll('.views button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.views button').forEach(x=>x.classList.toggle('on',x===b));const v=b.dataset.v;cam.yaw=0;cam.pitch=v==='top'?1.5:v==='low'?0.55:0.98;drawAna();});
+document.querySelectorAll('.views button[data-v]').forEach(b=>b.onclick=()=>{document.querySelectorAll('.views button[data-v]').forEach(x=>x.classList.toggle('on',x===b));const v=b.dataset.v;cam.yaw=0;cam.pitch=v==='top'?1.5:v==='low'?0.55:0.98;drawAna();});
 
 // ================= 모드 전환 =================
 let mode='pres';
