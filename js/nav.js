@@ -4,6 +4,7 @@
     ['index.html', '홈'],
     ['find.html', '내 출구 찾기'],
     ['operator.html', '운영자 안내'],
+    ['forecast.html', '혼잡 예보'],
     ['sim.html', '3D 시뮬레이션'],
     ['story.html', '스토리'],
     ['about.html', '데이터·방법']

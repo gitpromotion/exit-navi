@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>혼잡 예보 · EXIT NAVI</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
+<link rel="stylesheet" href="css/site.css">
+<style>
+.legend2{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--ink2);margin:6px 0 22px}
+.legend2 i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.month{margin:30px 0 12px;font-size:20px;font-weight:900}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+.fc{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 16px;cursor:pointer;text-align:left;font:inherit;color:inherit;position:relative;transition:border-color .15s,transform .15s}
+.fc:hover{border-color:var(--ink2);transform:translateY(-2px)}
+.fc.on{border-color:var(--ink);box-shadow:0 0 0 1px var(--ink)}
+.fc .d{font-size:13px;color:var(--ink2);font-weight:700}
+.fc .d b{font-size:22px;color:var(--ink);margin-right:4px}
+.fc .t{font-size:14px;font-weight:700;margin:6px 0 10px;line-height:1.4;min-height:39px}
+.fc .g{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;padding:3px 10px;border-radius:999px}
+.fc .m{font-size:12px;color:var(--ink2);margin-top:8px;line-height:1.6}
+.fc .warn{position:absolute;right:12px;top:12px;font-size:11px;color:var(--ink3)}
+.g0{background:#e8f6ef;color:#0f6b48}.g1{background:#fdf3dc;color:#8a5a00}.g2{background:#fdecec;color:#a8201f}
+.detail{position:sticky;top:76px;background:#fff;border:1px solid var(--line);border-radius:18px;padding:22px}
+.wrap2{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(300px,1fr);gap:24px;align-items:start;padding-bottom:64px}
+.detail h3{margin:6px 0 4px;font-size:20px}
+.detail .row{display:grid;grid-template-columns:110px 1fr;gap:6px 12px;font-size:14px;margin-top:14px}
+.detail .row span{color:var(--ink2)}
+.detail .big{font-size:34px;font-weight:900;letter-spacing:-1px;margin:10px 0 2px}
+.cmp2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+.cmp2 div{background:var(--soft);border-radius:12px;padding:10px 12px;font-size:12px;color:var(--ink2)}
+.cmp2 b{display:block;font-size:22px;color:var(--ink)}
+.pat{border-top:1px solid var(--line);padding:40px 0 70px}
+.tag2{display:inline-block;font-size:12px;font-weight:700;background:#0b0b0b;color:#fff;border-radius:999px;padding:3px 10px;margin-bottom:10px}
+.mgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
+.mc{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;position:relative}
+.mc .mn{font-weight:900;font-size:18px}
+.mc .bar{height:6px;background:var(--soft);border-radius:3px;margin:8px 0 6px;overflow:hidden}
+.mc .bar i{display:block;height:100%;border-radius:3px}
+.mc .s{font-size:12px;color:var(--ink2);line-height:1.6}
+.mc .lc{position:absolute;right:10px;top:10px;font-size:11px;color:var(--ink3)}
+.wgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
+.wgrid div{background:var(--soft);border-radius:12px;padding:12px 14px;font-size:13px;color:var(--ink2)}
+.wgrid b{display:block;font-size:20px;color:var(--ink)}
+@media(max-width:900px){.mgrid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:520px){.mgrid{grid-template-columns:repeat(2,1fr)}.wgrid{grid-template-columns:1fr}}
+@media(max-width:960px){.wrap2{grid-template-columns:1fr}.detail{position:static}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div style="padding-top:36px">
+    <p class="eyebrow">운영자 · 관객</p>
+    <h2 class="t" style="margin-bottom:6px">KSPO DOME 퇴장 혼잡 예보</h2>
+    <p class="lead" style="margin-bottom:8px">다가오는 공연마다 관객 규모를 미리 예측해, 날씨 예보처럼 퇴장 혼잡을 알려 드려요. 회차를 누르면 그날의 추천 계획과 역 도착 시각을 볼 수 있어요.</p>
+    <div class="legend2">
+      <span><i style="background:#1baf7a"></i>보통 (예상 1.1만 명 미만)</span>
+      <span><i style="background:#eda100"></i>혼잡 (1.1만~1.35만 명)</span>
+      <span><i style="background:#e34948"></i>매우 혼잡 (1.35만 명 이상)</span>
+      <span>* 표시 = 시작 시각 또는 가격 미공개 (가정값 사용)</span>
+    </div>
+  </div>
+  <div class="wrap2">
+    <div id="list"></div>
+    <aside class="detail" id="detail"></aside>
+  </div>
+  <section class="pat" id="pattern">
+    <span class="tag2">패턴 예측 · 실제 일정 아님</span>
+    <h2 class="t" style="font-size:26px;margin-bottom:6px">2027년 월별 예상 혼잡</h2>
+    <p class="lead" style="margin-bottom:16px">아직 일정이 발표되지 않은 달은 <b>2025년 KSPO DOME 공연 116회</b>의 패턴으로 미리 가늠해요. 공연 수는 2025년 같은 달 기준, 색은 그달 공연의 중간 관객 규모예요.</p>
+    <div class="mgrid" id="mgrid"></div>
+    <h3 style="margin:28px 0 0;font-size:18px">요일별로 보면</h3>
+    <div class="wgrid" id="wgrid"></div>
+    <p class="note" style="margin-top:16px">운영 계획: 공연 일정이 공개되는 대로 KOPIS·올림픽공원 공연정보를 매월 갱신해 위쪽 "회차별 예보"에 자동으로 추가합니다. 2028년까지 운영하면 연간 약 116회 공연 전체에 예보를 제공할 수 있어요.</p>
+  </section>
+</div>
+<script src="js/data_forecast.js"></script>
+<script>
+var FC = window.KSPO_FC.items, sel = null;
+var GI = { '보통': 0, '혼잡': 1, '매우 혼잡': 2 }, GC = ['#1baf7a', '#eda100', '#e34948'];
+function esc(t) { return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function fmt(n) { return Math.round(n).toLocaleString(); }
+function card(r, i) {
+  var g = GI[r['혼잡등급']], d = r['날짜'].split('-');
+  var unsure = !r['시간확정'] || !r['가격확정'];
+  return '<button class="fc' + (sel === i ? ' on' : '') + '" data-i="' + i + '">' + (unsure ? '<span class="warn">*</span>' : '') +
+    '<div class="d"><b>' + (+d[1]) + '/' + (+d[2]) + '</b>(' + r['요일'] + ') ' + r['시작'] + ' 시작</div>' +
+    '<div class="t">' + esc(r['공연명']) + '</div>' +
+    '<span class="g g' + g + '">● ' + r['혼잡등급'] + '</span>' +
+    '<div class="m">예상 관객 약 ' + (r['예측_관객'] / 10000).toFixed(1) + '만 명 · 종료 ' + r['예상종료'] + '</div></button>';
+}
+function renderList() {
+  var by = {}; FC.forEach(function (r, i) { var k = r['날짜'].slice(0, 7); (by[k] = by[k] || []).push([r, i]); });
+  document.getElementById('list').innerHTML = Object.keys(by).sort().map(function (k) {
+    var p = k.split('-'); return '<div class="month">' + p[0] + '년 ' + (+p[1]) + '월</div><div class="grid">' + by[k].map(function (x) { return card(x[0], x[1]); }).join('') + '</div>';
+  }).join('');
+  document.querySelectorAll('.fc').forEach(function (b) { b.onclick = function () { sel = +b.dataset.i; renderList(); renderDetail(); if (window.innerWidth < 960) document.getElementById('detail').scrollIntoView({ behavior: 'smooth' }); }; });
+}
+function renderDetail() {
+  var el = document.getElementById('detail');
+  if (sel === null) {
+    var cnt = [0, 0, 0]; FC.forEach(function (r) { cnt[GI[r['혼잡등급']]]++; });
+    el.innerHTML = '<p class="eyebrow" style="margin:0">요약</p><h3>앞으로 ' + FC.length + '회 공연</h3>' +
+      '<div class="cmp2"><div>매우 혼잡<b style="color:#e34948">' + cnt[2] + '회</b></div><div>혼잡<b style="color:#8a5a00">' + cnt[1] + '회</b></div></div>' +
+      '<p style="font-size:14px;color:var(--ink2);margin-top:16px">왼쪽에서 회차를 누르면 상세 예보가 나와요.</p>' +
+      '<p class="note" style="margin-top:14px">예상 관객은 7단계 예측 모델(공연 정보·요일·시작 시각·가격·회차·평년 기온, 오차 약 24%)로 계산한 <b>지하철 이용 기준 관객 규모</b>입니다. 공연 일정은 ' + window.KSPO_FC.made + ' 기준 예매처 공지·언론 보도에서 수집했고, 시작 시각이나 가격이 공개되지 않은 회차는 가정값(*)을 썼어요.</p>';
+    return;
+  }
+  var r = FC[sel], g = GI[r['혼잡등급']];
+  el.innerHTML = '<p class="eyebrow" style="margin:0">' + r['날짜'] + ' (' + r['요일'] + ') · ' + r['회차'] + '회차</p><h3>' + esc(r['공연명']) + '</h3>' +
+    '<div class="big" style="color:' + GC[g] + '">' + r['혼잡등급'] + '</div><div style="font-size:13px;color:var(--ink2)">예상 관객 약 ' + fmt(r['예측_관객']) + '명 (지하철 이용 기준 환산)</div>' +
+    '<div class="row"><span>시작 / 예상 종료</span><div>' + r['시작'] + ' → ' + r['예상종료'] + (r['시간확정'] ? '' : ' <small style="color:var(--ink3)">(시작 시각 가정)</small>') + '</div>' +
+    '<span>역 도착 피크</span><div>' + r['역도착_피크'] + '쯤 올림픽공원역</div>' +
+    '<span>추천 계획</span><div>' + r['추천계획'] + ' (출구 배정 + 2~4분 시차)</div>' +
+    '<span>평년 기온</span><div>' + r['평년기온'] + '°C (종료 시각 기준)' + (r['공휴일'] ? ' · 공휴일' : '') + '</div>' +
+    '<span>일정 출처</span><div style="font-size:13px">' + r['출처'] + '</div></div>' +
+    '<div class="cmp2"><div>지금처럼 최대 줄<b>' + fmt(r['지금처럼_최대줄']) + '명</b>F 위험</div><div>EXIT NAVI 최대 줄<b style="color:#2a78d6">' + fmt(r['EXIT_NAVI_최대줄']) + '명</b>D 혼잡</div></div>' +
+    '<div class="btns" style="margin-top:16px"><a class="btn" href="operator.html">운영자 방송판 →</a><a class="btn ghost" href="find.html">내 출구 찾기</a></div>' +
+    (r['가격확정'] ? '' : '<p style="font-size:12px;color:var(--ink3);margin-top:12px">* 가격 미공개: 2025년 공연 평균 가격으로 예측했어요.</p>');
+}
+renderList(); renderDetail();
+(function () {
+  var P = window.KSPO_FC.pattern; if (!P) return;
+  var mx = Math.max.apply(null, P.months.map(function (m) { return m.expected_sessions; }));
+  var col = function (g) { return g === '매우 혼잡' ? '#e34948' : g === '혼잡' ? '#eda100' : g === '보통' ? '#1baf7a' : '#b9b8b0'; };
+  document.getElementById('mgrid').innerHTML = P.months.map(function (m) {
+    var top = [['금', m.fri], ['토', m.sat], ['일', m.sun]].sort(function (a, b) { return b[1] - a[1]; }).filter(function (x) { return x[1] > 0; }).slice(0, 2).map(function (x) { return x[0]; }).join('·');
+    return '<div class="mc">' + (m.low_confidence ? '<span class="lc">자료 적음</span>' : '') + '<div class="mn">' + m.month + '월</div>' +
+      '<div class="bar"><i style="width:' + (m.expected_sessions / mx * 100) + '%;background:' + col(m.congestion) + '"></i></div>' +
+      '<div class="s"><b style="color:' + col(m.congestion) + '">' + m.congestion + '</b><br>공연 약 ' + m.expected_sessions + '회 · 주로 ' + (top || '-') + '<br>보통 ' + m.typical_start + ' 시작</div></div>';
+  }).join('');
+  document.getElementById('wgrid').innerHTML = P.weekdays.map(function (w) {
+    return '<div>' + w.weekday + '요일 (2025년 ' + w.sessions + '회)<b style="color:' + col(w.congestion) + '">' + w.congestion + '</b>중간 관객 약 ' + (w.median_audience / 10000).toFixed(1) + '만 명 · 보통 ' + w.typical_start + ' 시작</div>';
+  }).join('');
+})();
+</script>
+<script src="js/nav.js"></script>
+</body>
+</html>
