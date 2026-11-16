@@ -187,16 +187,6 @@ function pickVoice(lang) {
   });
   return best;
 }
-<<<<<<< HEAD
-function speak(texts, lang, onend) {
-  if (!TTS) { alert('이 브라우저는 음성 방송을 지원하지 않아요. 크롬이나 엣지에서 열어 주세요.'); return; }
-  TTS.cancel(); if (!Array.isArray(texts)) texts = [texts];
-  var code = LANGS[lang].tts, pref = pickVoice(lang);
-  texts.forEach(function (t, i) {
-    var u = new SpeechSynthesisUtterance(speechText(t, lang)); u.lang = code; if (pref) u.voice = pref;
-    u.rate = 0.92; u.pitch = 1.05; u.volume = 1;
-    if (i === texts.length - 1 && onend) u.onend = onend;
-=======
 var SPEAK_GAP = 700;   // 문장 사이 쉬는 시간(ms): 0.7초
 var speakRun = 0;      // 새로 재생하거나 멈추면 이전 재생 이어가기를 끊음
 function splitSentences(t) {
@@ -214,16 +204,11 @@ function speak(texts, lang, onend) {
     u.rate = 0.9; u.pitch = 1.0; u.volume = 1;
     u.onend = function () { setTimeout(function () { next(i + 1); }, SPEAK_GAP); };
     u.onerror = u.onend;
->>>>>>> woonsik
     TTS.speak(u);
   }
   next(0);
 }
-<<<<<<< HEAD
-function stopSpeak() { if (TTS) TTS.cancel(); }
-=======
 function stopSpeak() { speakRun++; if (TTS) TTS.cancel(); }
->>>>>>> woonsik
 if (TTS) { TTS.getVoices(); if ('onvoiceschanged' in TTS) TTS.onvoiceschanged = function () { TTS.getVoices(); }; }
 
 // ---------- 교통약자 우선 퇴장 (공식 좌석배치도: 2층 C블록 뒤편 장애인석, 좌석표 82석) ----------
