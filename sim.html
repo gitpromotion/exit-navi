@@ -119,7 +119,7 @@ canvas{display:block;touch-action:none}
     </div>
 
     <div class="lbl">시간 (공연 끝난 뒤)</div>
-    <div class="time"><button id="aPlay" style="width:44px;text-align:center">▶</button><input id="aT" type="range" min="0" max="30" step="0.25" value="6"><span class="t" id="aTl"></span></div>
+    <div class="time"><button id="aPlay" style="width:44px;text-align:center">▶</button><input id="aT" type="range" min="0" max="30" step="0.25" value="0"><span class="t" id="aTl"></span></div>
     <div id="exited" style="font-size:13px;margin-top:8px"></div>
 
     <div class="lbl">출구별 현황 — 막대 = 이 문으로 나갈 사람 중 <b>나간 비율</b>, 색 = 문 앞 줄 혼잡 등급</div>
@@ -346,7 +346,7 @@ document.getElementById('pSpeed').onclick=e=>{speed=speed===1?2:speed===2?0.5:1;
 document.getElementById('toAna').onclick=()=>setMode('ana');
 
 // ================= 분석 모드 =================
-let mth='P4',flr=2000,cpl=100,tA=6,playA=false,lastA=null,loopA=0;
+let mth='P4',flr=2000,cpl=100,tA=0,playA=false,lastA=null,loopA=0;
 const keyA=()=>mth==='P4'?`P4_${flr}_${cpl}`:`${mth}_${flr}_100`;
 const vC=View(document.getElementById('cC'),{key:keyA(),onchange:()=>drawAna(),onpick:id=>{if(!id)return;toggle(id);drawAna();}});
 function toggle(o){const k=vC.sels.findIndex(x=>x.type===o.type&&x.id===o.id);if(k>=0){vC.sels.splice(k,1);vC.sel=vC.sels[vC.sels.length-1]||null;}else{vC.sels.push(o);vC.sel=o;}}
