@@ -163,6 +163,7 @@ function closedLine(doorId, lang) {
 // ---------- 음성 방송 (브라우저 내장 음성 합성) ----------
 var TTS = window.speechSynthesis || null;
 function ttsOK() { return !!TTS; }
+<<<<<<< Updated upstream
 function speak(texts, lang, onend) {
   if (!TTS) { alert('이 브라우저는 음성 방송을 지원하지 않아요. 크롬이나 엣지에서 열어 주세요.'); return; }
   TTS.cancel(); if (!Array.isArray(texts)) texts = [texts];
@@ -172,11 +173,60 @@ function speak(texts, lang, onend) {
   texts.forEach(function (t, i) {
     var u = new SpeechSynthesisUtterance(t.replace(/[\[\]]/g, ' ')); u.lang = code; if (pref) u.voice = pref; u.rate = lang === 'en' ? 0.95 : 1;
     if (i === texts.length - 1 && onend) u.onend = onend;
-    TTS.speak(u);
-  });
+=======
+// 읽기용 문장 다듬기: 화면 글자는 그대로, 소리만 자연스럽게 ("2-2문" → "2 다시 2문", "#4" → "4번")
+function speechText(t, lang) {
+  t = String(t).replace(/[\[\]]/g, ' ');
+  var dash = { ko: ' 다시 ', en: ' dash ', ja: 'の', zh: '杠' }[lang];
+  t = t.replace(/(\d+)\s*-\s*(\d+)/g, '$1' + dash + '$2');
+  t = t.replace(/#\s*(\d+)/g, { ko: '$1번 ', en: 'number $1 ', ja: '$1番', zh: '$1号' }[lang]);
+  if (lang === 'ko') t = t.replace(/~/g, '에서 ');
+  return t.replace(/\s+/g, ' ').trim();
 }
+// 부드러운 목소리 우선: 신경망(Natural/Online) 음성 → 이름 있는 여성 음성 → 구글 → 그 외
+var SOFT_VOICES = /sunhi|yuna|injoon|nanami|kyoko|xiaoxiao|xiaoyi|tingting|jenny|aria|samantha|ava/i;
+function pickVoice(lang) {
+  var code = LANGS[lang].tts.slice(0, 2).toLowerCase(), best = null, bestScore = -1;
+  TTS.getVoices().forEach(function (x) {
+    if (!x.lang || x.lang.replace('_', '-').toLowerCase().indexOf(code) !== 0) return;
+    var sc = 0;
+    if (/natural|online|neural/i.test(x.name)) sc += 6;
+    if (SOFT_VOICES.test(x.name)) sc += 3;
+    if (/google/i.test(x.name)) sc += 2;
+    if (/heami|haruka|huihui|david|zira|mark/i.test(x.name)) sc -= 1; // 오래된 기계음
+    if (sc > bestScore) { bestScore = sc; best = x; }
+  });
+  return best;
+}
+var SPEAK_GAP = 700;   // 문장 사이 쉬는 시간(ms): 0.7초
+var speakRun = 0;      // 새로 재생하거나 멈추면 이전 재생 이어가기를 끊음
+function splitSentences(t) {
+  return String(t).split(/(?<=[.!?。！？])\s*/).map(function (x) { return x.trim(); }).filter(Boolean);
+}
+function speak(texts, lang, onend) {
+  if (!TTS) { alert('이 브라우저는 음성 방송을 지원하지 않아요. 크롬이나 엣지에서 열어 주세요.'); return; }
+  TTS.cancel(); if (!Array.isArray(texts)) texts = [texts];
+  var code = LANGS[lang].tts, pref = pickVoice(lang), run = ++speakRun, list = [];
+  texts.forEach(function (t) { splitSentences(speechText(t, lang)).forEach(function (x) { list.push(x); }); });
+  function next(i) {
+    if (run !== speakRun) return;
+    if (i >= list.length) { if (onend) onend(); return; }
+    var u = new SpeechSynthesisUtterance(list[i]); u.lang = code; if (pref) u.voice = pref;
+    u.rate = 0.9; u.pitch = 1.0; u.volume = 1;
+    u.onend = function () { setTimeout(function () { next(i + 1); }, SPEAK_GAP); };
+    u.onerror = u.onend;
+>>>>>>> Stashed changes
+    TTS.speak(u);
+  }
+  next(0);
+}
+<<<<<<< Updated upstream
 function stopSpeak() { if (TTS) TTS.cancel(); }
 if (TTS) TTS.getVoices();
+=======
+function stopSpeak() { speakRun++; if (TTS) TTS.cancel(); }
+if (TTS) { TTS.getVoices(); if ('onvoiceschanged' in TTS) TTS.onvoiceschanged = function () { TTS.getVoices(); }; }
+>>>>>>> Stashed changes
 
 // ---------- 교통약자 우선 퇴장 (공식 좌석배치도: 2층 C블록 뒤편 장애인석, 좌석표 82석) ----------
 // 장애인석과 출구(방풍실)가 같은 2층 → 계단 없이 이동. 휠체어 이동 속도 0.8m/s 가정.
