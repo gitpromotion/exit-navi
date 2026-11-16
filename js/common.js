@@ -72,13 +72,22 @@ function drawMap(svg, opt) {
     h += '<text x="' + c[0] + '" y="' + (c[1] + (opt.showDelay && dl ? -0.6 : 1.2)) + '" class="lb zn' + (sel ? ' w' : '') + '">' + z.id + '</text>';
     if (opt.showDelay && dl) h += '<text x="' + c[0] + '" y="' + (c[1] + 3.2) + '" class="lb dl' + (sel ? ' w' : '') + '">' + dl + '분 뒤</text>';
   });
-  if (opt.selected) {
+  ACCESS.segs.forEach(function (sg) {
+    var on = opt.selected === sg.id;
+    h += '<path class="acc" data-z="' + sg.id + '" d="' + sector(ACCESS.r - 1.1, ACCESS.r + 1.1, sg.a0 + 0.4, sg.a1 - 0.4) + '" fill="' + (on ? '#0b0b0b' : '#0f766e') + '" stroke="#fff" stroke-width="0.4"/>';
+  });
+  if (opt.selected && typeof opt.selected === 'string') {
+    var sg = accessSeg(opt.selected), dr = (opt.S && opt.accessDoor) ? opt.accessDoor : sg.door, a1 = DOORS[doorIdx[dr]].ang, am = Math.max(sg.a0, Math.min(sg.a1, a1));
+    var s0 = pt(ACCESS.r, am), m0 = pt(R_CONC, am), d0 = ((a1 - am + 540) % 360) - 180, e0 = pt(R_CONC, am + d0), f0 = pt(R_DOOR, a1);
+    h += '<path d="M' + s0 + 'L' + m0 + 'A' + R_CONC + ',' + R_CONC + ' 0 0 ' + (d0 > 0 ? 0 : 1) + ' ' + e0 + 'L' + f0 + '" fill="none" stroke="#0b0b0b" stroke-width="1.6" stroke-linecap="round" stroke-dasharray="0.1 2.6"/>';
+  }
+  if (opt.selected && typeof opt.selected !== 'string') {
     var zz = Z.filter(function (z) { return z.id === opt.selected; })[0];
     h += '<path d="' + routePath(zz, S.assign[zz.id]) + '" fill="none" stroke="#0b0b0b" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="0.1 2.6"/>';
   }
   var gates = {};
   DOORS.forEach(function (d, i) {
-    var p = pt(R_DOOR, d.ang), on = opt.selected && S.assign[opt.selected] === d.id;
+    var p = pt(R_DOOR, d.ang), on = opt.selected && (typeof opt.selected === 'string' ? ((opt.accessDoor || accessSeg(opt.selected).door) === d.id) : S.assign[opt.selected] === d.id);
     if (opt.closed === d.id) {
       h += '<circle class="door" data-d="' + d.id + '" cx="' + p[0] + '" cy="' + p[1] + '" r="3.4" fill="#e34948" stroke="#fff" stroke-width="0.8"/>' +
         '<path d="M' + (p[0] - 1.6) + ',' + (p[1] - 1.6) + 'L' + (p[0] + 1.6) + ',' + (p[1] + 1.6) + 'M' + (p[0] + 1.6) + ',' + (p[1] - 1.6) + 'L' + (p[0] - 1.6) + ',' + (p[1] + 1.6) + '" stroke="#fff" stroke-width="0.9" stroke-linecap="round" pointer-events="none"/>';
@@ -93,6 +102,9 @@ function drawMap(svg, opt) {
   svg.innerHTML = h;
   if (opt.onPick) svg.querySelectorAll('.z').forEach(function (el) {
     el.addEventListener('click', function () { opt.onPick(+el.getAttribute('data-z')); });
+  });
+  if (opt.onPick) svg.querySelectorAll('.acc').forEach(function (el) {
+    el.style.cursor = 'pointer'; el.addEventListener('click', function () { opt.onPick(el.getAttribute('data-z')); });
   });
   if (opt.onDoor) svg.querySelectorAll('.door').forEach(function (el) {
     el.style.cursor = 'pointer'; el.addEventListener('click', function () { opt.onDoor(el.getAttribute('data-d')); });
@@ -165,3 +177,32 @@ function speak(texts, lang, onend) {
 }
 function stopSpeak() { if (TTS) TTS.cancel(); }
 if (TTS) TTS.getVoices();
+
+// ---------- 교통약자 우선 퇴장 (공식 좌석배치도: 2층 C블록 뒤편 장애인석, 좌석표 82석) ----------
+// 장애인석과 출구(방풍실)가 같은 2층 → 계단 없이 이동. 휠체어 이동 속도 0.8m/s 가정.
+var ACCESS = { seats: 82, speed: 0.8, r: 43.5,
+  segs: [
+    { id: 'W1', label: '장애인석 (5~7구역 뒤)', zones: [5, 6, 7], a0: 99.5, a1: 141.5, door: '방풍실#4', dist: 40, seats: 35 },
+    { id: 'W2', label: '장애인석 (8구역 뒤)', zones: [8], a0: 83.8, a1: 97.2, door: '방풍실#5', dist: 26, seats: 12 },
+    { id: 'W3', label: '장애인석 (9~11구역 뒤)', zones: [9, 10, 11], a0: 40.1, a1: 81.8, door: '방풍실#6', dist: 39, seats: 35 }
+  ] };
+function accessSeg(id) { return ACCESS.segs.filter(function (s) { return s.id === id; })[0]; }
+// 비상 모드 등으로 배정 출구가 닫히면 같은 2-2문의 다른 열린 출구 → 없으면 가장 가까운 열린 출구
+function accessDoor(seg, closed) {
+  if (seg.door !== closed) return seg.door;
+  var mid = (seg.a0 + seg.a1) / 2, best = null, bd = 1e9;
+  DOORS.forEach(function (d) { if (d.id === closed) return; var dd = Math.abs(((d.ang - mid + 540) % 360) - 180) + (d.gate === '2-2문' ? 0 : 1000); if (dd < bd) { bd = dd; best = d.id; } });
+  return best;
+}
+function accessEstimate(k, id) {
+  var seg = accessSeg(id), S = sc(k), di = doorIdx[seg.door], walk = seg.dist / ACCESS.speed / 60;
+  var q = qAt(k, di, walk), wait = q / CAP;
+  return { seg: seg, door: seg.door, gate: DOORS[di].gate, walk: walk, queue: q, wait: wait, total: walk + wait };
+}
+function accessLine(gate, lang) {
+  var g = gateL(gate, lang);
+  return { ko: '[종료 직후 · 우선 퇴장] 장애인석 관객과 동반자분은 다른 관객보다 먼저 ' + g + '으로 퇴장해 주세요. 같은 층이라 계단 없이 바로 나가실 수 있습니다.',
+    en: '[Right after the show · Priority exit] Guests in wheelchair seating and their companions, please exit first via ' + g + '. It is on the same floor, so there are no stairs.',
+    ja: '[終演直後・優先退場] 車いす席のお客様と同伴の方は、先に' + g + 'からご退場ください。同じ階のため階段はありません。',
+    zh: '[演出结束后·优先退场] 轮椅席观众及陪同人员请先从' + g + '退场。出口在同一层，无需走楼梯。' }[lang];
+}

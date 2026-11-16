@@ -83,7 +83,7 @@ select.emg{border-color:#e34948;color:#8f1d1c;font-weight:700;background:#fdecec
     <div class="panel mapbox">
       <h3>구역별 출구·출발 시점 <small>출구 점을 누르면 비상 모드</small></h3>
       <svg id="map" viewBox="-87 -87 174 174" role="img" aria-label="구역별 배정 출구 지도"></svg>
-      <div style="font-size:13px;color:var(--ink2);margin-top:6px">색 = 배정 출구(<b style="color:#6250d6">2-1문</b> · <b style="color:#2a78d6">2-2문</b> · <b style="color:#d55181">2-3문</b>), 연한 색 = 잠시 기다렸다 출발, <b style="color:#e34948">✕</b> = 폐쇄 출구</div>
+      <div style="font-size:13px;color:var(--ink2);margin-top:6px">색 = 배정 출구(<b style="color:#6250d6">2-1문</b> · <b style="color:#2a78d6">2-2문</b> · <b style="color:#d55181">2-3문</b>), 연한 색 = 잠시 기다렸다 출발, <b style="color:#0f766e">━</b> = ♿ 장애인석(우선 퇴장), <b style="color:#e34948">✕</b> = 폐쇄 출구</div>
     </div>
     <div style="display:grid;gap:22px">
       <div class="panel">
@@ -132,9 +132,12 @@ document.getElementById('stop').onclick = stopSpeak;
 if (!ttsOK()) document.getElementById('ttsNote').textContent = '이 브라우저는 음성 방송을 지원하지 않아요. 크롬·엣지·사파리에서 열어 주세요.';
 
 var anns = [];
+function accGate() { var d = accessDoor(ACCESS.segs[1], closedId); return DOORS[doorIdx[d]].gate; }
+function accDoors() { return ACCESS.segs.map(function (g) { return doorName(accessDoor(g, closedId)); }).filter(function (v, i, a) { return a.indexOf(v) === i; }).join('·'); }
 function lines(speech) {
   var out = [];
   if (closedId) out.push(closedLine(closedId, lang));
+  out.push(accessLine(accGate(), lang));
   anns.forEach(function (a) { out.push((speech ? whenL(a.t, lang) + ' ' : '') + annLine(a.t, a.parts, lang, speech)); });
   return out;
 }
@@ -166,6 +169,8 @@ function render() {
     var t0 = closedLine(closedId, lang);
     html += '<li class="emg"><div class="t" style="color:#e34948">비상<small>먼저 방송</small></div><div class="tx">' + t0 + '</div><div class="bt"><button data-s="-1">🔊 듣기</button><button data-c="-1">복사</button></div></li>';
   }
+  html += '<li style="border-color:#99d5cb;background:#f2faf8"><div class="t" style="color:#0f766e">우선 퇴장<small>종료 직후 · 교통약자</small></div><div class="tx">♿ 장애인석 82석 + 동반자 → <span class="gt" style="background:' + GATE[accGate()] + '">' + accGate() + '</span>' + accDoors() + ' (같은 층, 계단 없음)' +
+    (lang === 'ko' ? '' : '<span class="say">' + accessLine(accGate(), lang) + '</span>') + '</div><div class="bt"><button data-s="-2">🔊 듣기</button><button data-c="-2">복사</button></div></li>';
   html += anns.map(function (a, i) {
     var parts = a.parts.map(function (p) { return '<span class="gt" style="background:' + GATE[p.gate] + '">' + p.gate + '</span>' + ranges(p.zones) + '구역'; }).join('<br>');
     var say = lang === 'ko' ? '' : '<span class="say">' + annLine(a.t, a.parts, lang, false) + '</span>';
@@ -173,7 +178,7 @@ function render() {
       '<div class="tx">' + parts + say + '</div><div class="bt"><button data-s="' + i + '">🔊 듣기</button><button data-c="' + i + '">복사</button></div></li>';
   }).join('');
   var tl = document.getElementById('tl'); tl.innerHTML = html;
-  function textOf(i, speech) { return i < 0 ? closedLine(closedId, lang) : (speech ? whenL(anns[i].t, lang) + ' ' : '') + annLine(anns[i].t, anns[i].parts, lang, speech); }
+  function textOf(i, speech) { if (i === -2) return speech ? accessLine(accGate(), lang).replace(/^\[[^\]]*\]\s*/, '') : accessLine(accGate(), lang); return i < 0 ? closedLine(closedId, lang) : (speech ? whenL(anns[i].t, lang) + ' ' : '') + annLine(anns[i].t, anns[i].parts, lang, speech); }
   tl.querySelectorAll('button[data-s]').forEach(function (b) { b.onclick = function () { speak(textOf(+b.dataset.s, true), lang); }; });
   tl.querySelectorAll('button[data-c]').forEach(function (b) {
     b.onclick = function () {
