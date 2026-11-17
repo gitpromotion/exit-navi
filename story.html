@@ -85,8 +85,8 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:'Noto Sans KR',s
     <div class="step" data-s="1">
       <div class="k">오늘의 KSPO DOME</div>
       <h2>1년에 116번, 만 오천 석이 가득 찹니다</h2>
-      <p>2025년에만 공연 116회. 2층 안쪽 22개 구역과 3층 바깥쪽 30개 구역, 좌석 14,151석에 스탠딩 관객까지 더해집니다.</p>
-      <p>이들이 나갈 수 있는 문은 2층 정문 3곳의 출구 <b>9개</b>뿐입니다.</p>
+      <p>2025년에만 공연 116회. 2층 안쪽 22개 구역과 3층 바깥쪽 30개 구역, 좌석 13,948석에 스탠딩 관객까지 더해집니다.</p>
+      <p>이들이 나갈 수 있는 문은 2층 정문 3곳(2-1·2-2·2-3문)의 출구 <b>9개</b>뿐입니다.</p>
     </div>
     <div class="step" data-s="2">
       <div class="k">데이터가 본 퇴장</div>
@@ -160,7 +160,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:'Noto Sans KR',s
     <div class="card"><b>108회</b><span>2025년 실제 공연·지하철 데이터로 검증</span></div>
   </div>
   <a class="btn" href="sim.html">3D 시뮬레이션 직접 해보기 →</a> <a class="btn ghost" href="find.html">내 구역 출구 찾기 →</a>
-  <p class="fine">활용 데이터: 한국체육산업개발 KSPO DOME 3D 모델(실감형 콘텐츠)·올림픽공원 공연정보·KSPO DOME 평면도/좌석배치도, KOPIS 공연정보, 서울 지하철 역별 시간대 승하차, 기상청 ASOS, 한국천문연구원 특일정보(모두 2025년).<br>
+  <p class="fine">활용 데이터: 한국체육산업개발 KSPO DOME 3D 모델(실감형 콘텐츠)·올림픽공원 공연정보·KSPO DOME 평면도/좌석배치도, KOPIS 공연정보, 올림픽공원 2025 입출차정보·차량입출차 연계 데이터, 서울 지하철 역별 시간대 승하차, 서울 버스 정류장별 승하차(2024.12~2025.12), 기상청 ASOS, 한국천문연구원 특일정보(그 밖에는 모두 2025년).<br>
   화면의 줄 인원은 실측이 아니라 실제 데이터를 바탕으로 한 시뮬레이션 결과입니다(출구 문 폭 2.35m, 1분 183명 통과, 관객이 일어나는 시간 중앙값 4분, 플로어 관객 2,000명 가정). 출구별 줄 길이의 실측 검증은 출입문 계수기·CCTV 데이터로 보완할 계획입니다. 무대 위치는 예시입니다.</p>
 </section>
 <script src="js/data2.js"></script>
@@ -298,7 +298,7 @@ const view=View(document.getElementById('cv'),{key:'P0_2000_100',cam:camS,labels
 view.showFlow=true;
 const STEPS=[
  {key:'P0_2000_100',t:[0,0],tag:'1992년 2월 · 올림픽체조경기장',sub:'지금의 KSPO DOME',flow:false,pitch:1.25,yaw:0.0,zoom:0.92,dim:true},
- {key:'P0_2000_100',t:[0,0],tag:'KSPO DOME',sub:'구역 52개 · 출구 9개 · 좌석 14,151석',flow:false,pitch:0.98,yaw:-0.5,zoom:1.0,spin:true},
+ {key:'P0_2000_100',t:[0,0],tag:'KSPO DOME',sub:'구역 52개 · 출구 9개 · 좌석 13,948석',flow:false,pitch:0.98,yaw:-0.5,zoom:1.0,spin:true},
  {key:'P0_2000_100',t:[0,0],tag:'공연 종료 직전',sub:'2025년 공연 108회의 지하철 데이터',flow:false,pitch:1.1,yaw:0,zoom:1.0},
  {key:'P0_2000_100',t:[0,0],tag:'지금처럼 · 가장 가까운 출구',sub:'52개 구역 → 출구 경로',routes:true,flow:false,pitch:1.45,yaw:0,zoom:1.0},
  {key:'P0_2000_100',t:[0,9],tag:'지금처럼',sub:'각자 가장 가까운 출구로 동시에 퇴장',flow:true,pitch:0.98,yaw:0,zoom:1.0,warn:true},

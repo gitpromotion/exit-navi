@@ -48,7 +48,7 @@
       <div><b>③ 출발 시각·음성</b>"종료 후 ○분, ○문으로" 안내와 4개 언어 음성을 들을 수 있어요.</div>
     </div>
     <div class="qtool">
-      <div class="seg" id="qf"><button data-f="all" class="on">전체</button><button data-f="0">1층 1~22구역</button><button data-f="1">2층 23~52구역</button><button data-f="w">♿ 장애인석</button></div>
+      <div class="seg" id="qf"><button data-f="all" class="on">전체</button><button data-f="0">2층 1~22구역</button><button data-f="1">3층 23~52구역</button><button data-f="w">♿ 장애인석</button></div>
       <button class="qbtn" onclick="window.print()">🖨 인쇄하기</button>
     </div>
   </div>
@@ -67,7 +67,7 @@
   var items = Object.keys(Q.codes).map(function (k) {
     var w = k.charAt(0) === 'W', num = +k;
     return { k: k, grp: w ? 'w' : (num <= 22 ? '0' : '1'),
-      name: w ? '♿ 장애인석' : k + '구역', sub: w ? '2층 ' + acc[k] : (num <= 22 ? '1층' : '2층') };
+      name: w ? '♿ 장애인석' : k + '구역', sub: w ? '2층 ' + acc[k] : (num <= 22 ? '2층' : '3층') };
   });
   function draw(f) {
     document.getElementById('qg').innerHTML = items.filter(function (it) { return f === 'all' || it.grp === f; }).map(function (it) {
