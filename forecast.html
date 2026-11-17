@@ -112,7 +112,7 @@ input[type=range]{width:100%;accent-color:#0b0b0b;height:28px}
   function gi(ef) { return ef >= 20 ? 2 : ef >= 10 ? 1 : 0; }
   function los(q) { return q <= 142 ? 'A~C' : q <= 333 ? 'D' : q <= 500 ? 'E' : 'F'; }
   function clock(hm, add) { var p = hm.split(':'), m = +p[0] * 60 + +p[1] + Math.round(add); m = (m + 1440) % 1440; return String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0'); }
-  function floorPlan(a) { var fl = Math.max(0, a - SEATS); return fl < 1000 ? 0 : fl < 3000 ? 2000 : 4000; }
+  function floorPlan(a) { var fl = Math.max(0, a - SEATS); return Math.min(4000, Math.round(fl / 500) * 500); }
 
   // 1. 공연 목록 (월별 묶음)
   var sel = document.getElementById('ses'), by = {};
@@ -156,7 +156,7 @@ input[type=range]{width:100%;accent-color:#0b0b0b;height:28px}
       '<div class="nav"><h4 style="color:#1f5fb4">EXIT NAVI 안내대로</h4><div class="v" style="color:#1f5fb4">' + fmt(nq) + '명<small>한 출구 최대 줄 · ' + los(nq) + '등급</small></div>' +
         '<ul><li>위험(E·F) 지속 <b>0분</b></li><li>1인 평균 대기 <b>' + nw.toFixed(1) + '분</b> <span style="font-size:11.5px">(자리 대기 포함)</span></li><li>90% 퇴장 <b>종료 후 ' + nc.toFixed(1) + '분</b></li></ul></div></div>' +
       '<div class="rows2">' +
-        '<span>추천 계획</span><div>' + (dz > 0 ? '출구 재배정 + <b>' + dz + '개 구역</b> 2~4분 시차' : '출구 재배정만 (시차 없이도 충분)') + '<br><span style="font-size:12.5px;color:var(--ink3)">운영자 화면에서는 가장 가까운 "플로어 ' + fmt(plan) + '명" 계획을 열어요</span></div>' +
+        '<span>추천 계획</span><div>' + (dz > 0 ? '출구 재배정 + <b>' + dz + '개 구역</b> 2~4분 시차' : '출구 재배정만 (시차 없이도 충분)') + '<br><span style="font-size:12.5px;color:var(--ink3)">운영자 화면에서는 "플로어 ' + fmt(plan) + '명" 계획으로 열려요</span></div>' +
         '<span>퇴장 시각</span><div>예정 종료 ' + endC + ' 기준, 90%가 <b>' + clock(endC, nc) + '</b>쯤 건물 밖 (지금처럼이면 ' + clock(endC, cc) + ')</div>' +
         '<span>역 도착</span><div>올림픽공원역 도착이 가장 많은 때 <b>' + clock(endC, 8) + '</b>쯤 (출구에서 도보 약 6분)</div>' +
         '<span>주의</span><div style="font-size:13px;color:var(--ink2)">앵콜 등으로 실제 퇴장은 예정 종료보다 늦어지는 일이 많아요(2025년 지하철 분석상 평균 약 57분). 시각은 실제 종료에 맞춰 다시 보세요.</div>' +

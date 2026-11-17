@@ -239,3 +239,30 @@ function accessLine(gate, lang) {
     ja: '[終演直後・優先退場] 車いす席のお客様と同伴の方は、先に' + g + 'からご退場ください。同じ階のため階段はありません。',
     zh: '[演出结束后·优先退场] 轮椅席观众及陪同人员请先从' + g + '退场。出口在同一层，无需走楼梯。' }[lang];
 }
+
+// ---------- 플로어(스탠딩) 관객 수 고르기: 0~4,000명, 500명 단위 (끌기·마우스 휠·키보드) ----------
+var FLOORS = [0, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4000];
+(function () {
+  var css = document.createElement('style');
+  css.textContent = '.fsel{display:inline-flex;flex-direction:column;gap:2px;min-width:260px;max-width:340px;flex:1;background:var(--soft,#f3f2ee);border-radius:12px;padding:8px 12px 6px}' +
+    '.fsel .fh{display:flex;align-items:baseline;justify-content:space-between;gap:8px;font-size:12.5px;color:var(--ink2,#52514e)}' +
+    '.fsel .fh b{font-size:17px;color:var(--ink,#0b0b0b);font-variant-numeric:tabular-nums}' +
+    '.fsel input{width:100%;margin:2px 0 0;accent-color:#0b0b0b;cursor:pointer;height:24px}' +
+    '.fsel .ft{display:flex;justify-content:space-between;font-size:10.5px;color:var(--ink3,#8a8983);padding:0 2px}' +
+    '.fsel .fn{font-size:11px;color:var(--ink3,#8a8983)}';
+  document.head.appendChild(css);
+})();
+function floorControl(el, value, onChange) {
+  el.className = 'fsel';
+  el.innerHTML = '<div class="fh"><span>플로어(스탠딩) 관객 수</span><b></b></div>' +
+    '<input type="range" min="0" max="4000" step="500" aria-label="플로어(스탠딩) 관객 수">' +
+    '<div class="ft"><span>없음</span><span>1천</span><span>2천</span><span>3천</span><span>4천명</span></div>' +
+    '<div class="fn">좌석 관객 약 1.4만 명 + 플로어 관객</div>';
+  var inp = el.querySelector('input'), lab = el.querySelector('b');
+  function show(v) { lab.textContent = v ? v.toLocaleString() + '명' : '없음 (좌석만)'; }
+  function set(v, fire) { v = Math.max(0, Math.min(4000, Math.round(v / 500) * 500)); inp.value = v; show(v); if (fire) onChange(v); }
+  inp.oninput = function () { set(+inp.value, true); };
+  el.addEventListener('wheel', function (e) { e.preventDefault(); set(+inp.value + (e.deltaY > 0 ? -500 : 500), true); }, { passive: false });
+  set(value, false);
+  return { set: set };
+}
