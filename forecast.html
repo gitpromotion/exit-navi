@@ -12,185 +12,191 @@
 <meta name="apple-mobile-web-app-title" content="EXIT NAVI">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 
-<title>혼잡 예보 · EXIT NAVI</title>
+<title>혼잡 계산기 · EXIT NAVI</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
 <link rel="stylesheet" href="css/site.css?v=2">
 <style>
-.legend2{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--ink2);margin:6px 0 22px}
-.legend2 i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-1px}
-.month{margin:30px 0 12px;font-size:20px;font-weight:900}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
-.fc{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 16px;cursor:pointer;text-align:left;font:inherit;color:inherit;position:relative;transition:border-color .15s,transform .15s}
-.fc:hover{border-color:var(--ink2);transform:translateY(-2px)}
-.fc.on{border-color:var(--ink);box-shadow:0 0 0 1px var(--ink)}
-.fc .d{font-size:13px;color:var(--ink2);font-weight:700}
-.fc .d b{font-size:22px;color:var(--ink);margin-right:4px}
-.fc .t{font-size:14px;font-weight:700;margin:6px 0 10px;line-height:1.4;min-height:39px}
-.fc .g{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;padding:3px 10px;border-radius:999px}
-.fc .m{font-size:12px;color:var(--ink2);margin-top:8px;line-height:1.6}
-.fc .warn{position:absolute;right:12px;top:12px;font-size:11px;color:var(--ink3)}
+.calc{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:22px;align-items:start;padding:8px 0 40px}
+.box{background:#fff;border:1px solid var(--line);border-radius:18px;padding:20px}
+.step{display:flex;align-items:center;gap:10px;font-weight:900;font-size:16px;margin:0 0 12px}
+.step i{font-style:normal;display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--ink);color:#fff;font-size:13px}
+select.big{width:100%;font:inherit;font-size:15px;border:1px solid var(--line);border-radius:12px;padding:11px 12px;background:#fff;color:var(--ink)}
+.sess{margin-top:12px;background:var(--soft);border-radius:12px;padding:12px 14px;font-size:14px;line-height:1.75}
+.sess b{font-size:15px}
+.tagw{display:inline-block;font-size:11.5px;font-weight:700;color:#8a5a00;background:#fdf3dc;border-radius:6px;padding:1px 7px;margin-left:4px}
+.aud{font-size:40px;font-weight:900;letter-spacing:-1px;font-variant-numeric:tabular-nums;margin:4px 0 2px}
+.aud small{font-size:15px;font-weight:500;color:var(--ink2);margin-left:6px;letter-spacing:0}
+input[type=range]{width:100%;accent-color:#0b0b0b;height:28px}
+.ticks{display:flex;justify-content:space-between;font-size:11.5px;color:var(--ink3);margin-top:-2px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.chips button{font:inherit;font-size:13px;border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 12px;cursor:pointer;color:var(--ink)}
+.chips button:hover{border-color:var(--ink2)}
+.chips button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.ref{margin-top:12px;font-size:12.5px;color:var(--ink2);line-height:1.7;border-top:1px dashed var(--line);padding-top:10px}
+.ref button{font:inherit;font-size:12px;border:1px solid var(--line);background:#fff;border-radius:8px;padding:2px 8px;cursor:pointer;margin-left:4px}
+.grade{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.grade .gb{font-size:30px;font-weight:900;padding:4px 16px;border-radius:12px}
 .g0{background:#e8f6ef;color:#0f6b48}.g1{background:#fdf3dc;color:#8a5a00}.g2{background:#fdecec;color:#a8201f}
-.detail{position:sticky;top:76px;background:#fff;border:1px solid var(--line);border-radius:18px;padding:22px}
-.wrap2{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(300px,1fr);gap:24px;align-items:start;padding-bottom:64px}
-.detail h3{margin:6px 0 4px;font-size:20px}
-.detail .row{display:grid;grid-template-columns:110px 1fr;gap:6px 12px;font-size:14px;margin-top:14px}
-.detail .row span{color:var(--ink2)}
-.detail .big{font-size:34px;font-weight:900;letter-spacing:-1px;margin:10px 0 2px}
-.cmp2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
-.cmp2 div{background:var(--soft);border-radius:12px;padding:10px 12px;font-size:12px;color:var(--ink2)}
-.cmp2 b{display:block;font-size:22px;color:var(--ink)}
+.grade p{margin:0;font-size:14px;color:var(--ink2);line-height:1.6;flex:1;min-width:220px}
+.cmp3{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+.cmp3>div{border-radius:14px;padding:14px 16px}
+.cmp3 .cur{background:var(--soft)}.cmp3 .nav{background:#eef4fd}
+.cmp3 h4{margin:0 0 8px;font-size:14px}
+.cmp3 .v{font-size:28px;font-weight:900;font-variant-numeric:tabular-nums;line-height:1.15}
+.cmp3 .v small{font-size:13px;font-weight:500;color:var(--ink2);margin-left:4px}
+.cmp3 ul{list-style:none;margin:8px 0 0;padding:0;font-size:13px;color:var(--ink2);line-height:1.8}
+.cmp3 ul b{color:var(--ink)}
+.rows2{display:grid;grid-template-columns:120px 1fr;gap:8px 12px;font-size:14px;margin-top:16px;border-top:1px solid var(--line);padding-top:14px}
+.rows2 span{color:var(--ink2)}
+.btns2{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+.why{font-size:12.5px;color:var(--ink3);line-height:1.7;margin-top:14px}
 .pat{border-top:1px solid var(--line);padding:40px 0 70px}
 .tag2{display:inline-block;font-size:12px;font-weight:700;background:#0b0b0b;color:#fff;border-radius:999px;padding:3px 10px;margin-bottom:10px}
-.mgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
-.mc{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;position:relative}
-.mc .mn{font-weight:900;font-size:18px}
-.mc .bar{height:6px;background:var(--soft);border-radius:3px;margin:8px 0 6px;overflow:hidden}
-.mc .bar i{display:block;height:100%;border-radius:3px}
-.mc .s{font-size:12px;color:var(--ink2);line-height:1.6}
-.mc .lc{position:absolute;right:10px;top:10px;font-size:11px;color:var(--ink3)}
 .wgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
-.wgrid div{background:var(--soft);border-radius:12px;padding:12px 14px;font-size:13px;color:var(--ink2)}
-.wgrid b{display:block;font-size:20px;color:var(--ink)}
-@media(max-width:900px){.mgrid{grid-template-columns:repeat(3,1fr)}}
-@media(max-width:520px){.mgrid{grid-template-columns:repeat(2,1fr)}.wgrid{grid-template-columns:1fr}}
-@media(max-width:960px){.wrap2{grid-template-columns:1fr}.detail{position:static}}
+.wgrid div{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;font-size:12px;color:var(--ink2);line-height:1.6}
+.wgrid b{display:block;font-size:18px;margin:2px 0}
+@media(max-width:960px){.calc{grid-template-columns:1fr}}
+@media(max-width:600px){.cmp3{grid-template-columns:1fr}.wgrid{grid-template-columns:1fr}.aud{font-size:34px}.rows2{grid-template-columns:96px 1fr}}
 </style>
 </head>
 <body>
 <div class="wrap">
   <div style="padding-top:36px">
     <p class="eyebrow">운영자 · 관객</p>
-    <h2 class="t" style="margin-bottom:6px">KSPO DOME 퇴장 혼잡 예보</h2>
-    <p class="lead" style="margin-bottom:8px">다가오는 공연마다 관객 규모를 미리 예측해, 날씨 예보처럼 퇴장 혼잡을 알려 드려요. 회차를 누르면 그날의 추천 계획과 역 도착 시각을 볼 수 있어요.</p>
-    <div class="legend2">
-      <span><i style="background:#1baf7a"></i>보통 (지금처럼이면 위험 등급 10분 미만)</span>
-      <span><i style="background:#eda100"></i>혼잡 (위험 10~20분)</span>
-      <span><i style="background:#e34948"></i>매우 혼잡 (위험 20분 이상)</span>
-      <a href="#criteria" style="font-weight:700">기준 보기 ↓</a>
-      <span>* 표시 = 시작 시각 또는 가격 미공개 (가정값 사용)</span>
-    </div>
+    <h2 class="t" style="margin-bottom:6px">공연 혼잡 계산기</h2>
+    <p class="lead" style="margin-bottom:14px">공연을 고르고 관객 수를 정하면, 그 조건으로 퇴장 혼잡을 바로 계산해요. 관객 수는 예측값을 쓰지 않고 <b>직접 고르는 값</b>이라, 실제 판매 좌석 수를 넣으면 그날 그대로의 결과가 나와요.</p>
   </div>
-  <div class="wrap2">
-    <div id="list"></div>
-    <aside class="detail" id="detail"></aside>
+  <div class="calc">
+    <div style="display:grid;gap:16px">
+      <div class="box">
+        <div class="step"><i>1</i>공연 고르기</div>
+        <select class="big" id="ses"></select>
+        <div class="sess" id="sesInfo"></div>
+      </div>
+      <div class="box">
+        <div class="step"><i>2</i>관객 수 고르기</div>
+        <div class="aud" id="audV"></div>
+        <input type="range" id="aud" min="5000" max="18000" step="250" value="14000" aria-label="관객 수">
+        <div class="ticks"><span>5천</span><span>좌석 약 1.4만</span><span>1.8만</span></div>
+        <div class="chips" id="chips"></div>
+        <div class="ref" id="ref"></div>
+      </div>
+    </div>
+    <div class="box" id="out"></div>
   </div>
   <section class="pat" id="criteria">
-    <span class="tag2">등급 기준 · 시뮬레이션</span>
+    <span class="tag2">계산 근거 · 시뮬레이션</span>
     <h2 class="t" style="font-size:26px;margin-bottom:6px">혼잡 등급은 이렇게 정했어요</h2>
-    <p class="lead" style="margin-bottom:12px">관객 수를 5,000명부터 18,000명까지 바꿔 가며 퇴장 시뮬레이션을 돌렸어요. 지금처럼(가까운 출구로 동시 퇴장) 나갈 때 <b>출구 줄이 위험 등급(E·F)으로 유지되는 시간</b>이 10분을 넘는 지점과 20분을 넘는 지점을 등급 경계로 썼어요.</p>
+    <p class="lead" style="margin-bottom:12px">관객 수를 5,000명부터 18,000명까지 250명씩 바꿔 가며 퇴장 시뮬레이션을 돌렸어요. 지금처럼(가까운 출구로 동시 퇴장) 나갈 때 <b>출구 줄이 위험 등급(E·F)으로 유지되는 시간</b>이 10분과 20분을 넘는 지점을 등급 경계로 썼어요. 위에서 고른 관객 수는 그래프에 세로선으로 표시돼요.</p>
     <div class="chart" style="position:relative;background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px">
       <svg id="gc" viewBox="0 0 900 300" style="width:100%;height:auto;display:block;overflow:visible"></svg>
-      <div id="gtip" style="position:absolute;pointer-events:none;background:#0b0b0b;color:#fff;border-radius:8px;padding:6px 9px;font-size:12px;line-height:1.5;white-space:nowrap;display:none;transform:translate(-50%,-110%)"></div>
     </div>
     <div class="wgrid" id="gsum"></div>
-    <p style="font-size:13px;color:var(--ink2);margin-top:12px">관객이 약 7,750명만 넘어도 지금 방식에서는 가장 붐비는 출구가 잠시라도 F등급(위험)에 들어가요. 그래서 "보통"도 안전하다는 뜻은 아니고, 위험한 시간이 짧다는 뜻이에요. EXIT NAVI 계획을 쓰면 모든 등급에서 위험 시간이 0분이에요.</p>
-  </section>
-  <section class="pat" id="pattern">
-    <span class="tag2">패턴 예측 · 실제 일정 아님</span>
-    <h2 class="t" style="font-size:26px;margin-bottom:6px">2027년 월별 예상 혼잡</h2>
-    <p class="lead" style="margin-bottom:16px">아직 일정이 발표되지 않은 달은 <b>2025년 KSPO DOME 공연 116회</b>의 패턴으로 미리 가늠해요. 공연 수는 2025년 같은 달 기준, 색은 그달 공연의 중간 관객 규모예요.</p>
-    <div class="mgrid" id="mgrid"></div>
-    <h3 style="margin:28px 0 0;font-size:18px">요일별로 보면</h3>
-    <div class="wgrid" id="wgrid"></div>
-    <p class="note" style="margin-top:16px">운영 계획: 공연 일정이 공개되는 대로 KOPIS·올림픽공원 공연정보를 매월 갱신해 위쪽 "회차별 예보"에 자동으로 추가합니다. 2028년까지 운영하면 연간 약 116회 공연 전체에 예보를 제공할 수 있어요.</p>
+    <p class="why">EXIT NAVI 결과는 관객 수마다 출구 배정과 시차를 <b>다시 최적화(MILP)</b>해서 계산했어요(5,000~18,000명, 500명 간격, 27번). 좌석(약 13,948석)까지는 모든 구역에 고르게 앉는다고 보고, 그보다 많으면 늘어난 만큼을 플로어(스탠딩) 관객으로 넣었어요. 결과 파일: out/S11-2_관객수별_최대줄.csv, out/S13-1_관객수별_계산기.csv</p>
   </section>
 </div>
-<script src="js/data_forecast.js"></script>
+<script src="js/data_calc.js?v=1"></script>
 <script>
-var FC = window.KSPO_FC.items, sel = null;
-var GI = { '보통': 0, '혼잡': 1, '매우 혼잡': 2 }, GC = ['#1baf7a', '#eda100', '#e34948'];
-function esc(t) { return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-function fmt(n) { return Math.round(n).toLocaleString(); }
-function card(r, i) {
-  var g = GI[r['혼잡등급']], d = r['날짜'].split('-');
-  var unsure = !r['시간확정'] || !r['가격확정'];
-  return '<button class="fc' + (sel === i ? ' on' : '') + '" data-i="' + i + '">' + (unsure ? '<span class="warn">*</span>' : '') +
-    '<div class="d"><b>' + (+d[1]) + '/' + (+d[2]) + '</b>(' + r['요일'] + ') ' + r['시작'] + ' 시작</div>' +
-    '<div class="t">' + esc(r['공연명']) + '</div>' +
-    '<span class="g g' + g + '">● ' + r['혼잡등급'] + '</span>' +
-    '<div class="m">예상 관객 약 ' + (r['예측_관객'] / 10000).toFixed(1) + '만 명 · 종료 ' + r['예상종료'] + '</div></button>';
-}
-function renderList() {
-  var by = {}; FC.forEach(function (r, i) { var k = r['날짜'].slice(0, 7); (by[k] = by[k] || []).push([r, i]); });
-  document.getElementById('list').innerHTML = Object.keys(by).sort().map(function (k) {
-    var p = k.split('-'); return '<div class="month">' + p[0] + '년 ' + (+p[1]) + '월</div><div class="grid">' + by[k].map(function (x) { return card(x[0], x[1]); }).join('') + '</div>';
-  }).join('');
-  document.querySelectorAll('.fc').forEach(function (b) { b.onclick = function () { sel = +b.dataset.i; renderList(); renderDetail(); if (window.innerWidth < 960) document.getElementById('detail').scrollIntoView({ behavior: 'smooth' }); }; });
-}
-function renderDetail() {
-  var el = document.getElementById('detail');
-  if (sel === null) {
-    var cnt = [0, 0, 0]; FC.forEach(function (r) { cnt[GI[r['혼잡등급']]]++; });
-    el.innerHTML = '<p class="eyebrow" style="margin:0">요약</p><h3>앞으로 ' + FC.length + '회 공연</h3>' +
-      '<div class="cmp2"><div>매우 혼잡<b style="color:#e34948">' + cnt[2] + '회</b></div><div>혼잡<b style="color:#8a5a00">' + cnt[1] + '회</b></div></div>' +
-      '<p style="font-size:14px;color:var(--ink2);margin-top:16px">왼쪽에서 회차를 누르면 상세 예보가 나와요.</p>' +
-      '<p class="note" style="margin-top:14px">등급은 관객 수별로 퇴장 시뮬레이션을 돌려, <b>지금처럼 나갈 때 출구가 위험 등급(E·F)인 시간</b>으로 나눴어요 (10분·20분 기준). 예상 관객은 7단계 예측 모델(공연 정보·요일·시작 시각·가격·회차·평년 기온, 오차 약 24%)로 계산한 <b>지하철 이용 기준 관객 규모</b>입니다. 공연 일정은 ' + window.KSPO_FC.made + ' 기준 예매처 공지·언론 보도에서 수집했고, 시작 시각이나 가격이 공개되지 않은 회차는 가정값(*)을 썼어요.</p>';
-    return;
+(function () {
+  var D = window.KSPO_CALC, S = D.sessions, CALC = D.calc, G = D.grade, SEATS = D.seats;
+  var GC = ['#1baf7a', '#eda100', '#e34948'], GN = ['보통', '혼잡', '매우 혼잡'];
+  var st = { s: 0, a: 14000 };
+  function esc(t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+  function fmt(n) { return Math.round(n).toLocaleString(); }
+  function lerp(a, key) {   // 500명 간격 결과를 250명 단위로 이어 붙이기
+    var i = 0; while (i < CALC.length - 2 && CALC[i + 1].audience <= a) i++;
+    var p = CALC[i], q = CALC[i + 1], t = Math.max(0, Math.min(1, (a - p.audience) / (q.audience - p.audience)));
+    return p[key] + (q[key] - p[key]) * t;
   }
-  var r = FC[sel], g = GI[r['혼잡등급']];
-  el.innerHTML = '<p class="eyebrow" style="margin:0">' + r['날짜'] + ' (' + r['요일'] + ') · ' + r['회차'] + '회차</p><h3>' + esc(r['공연명']) + '</h3>' +
-    '<div class="big" style="color:' + GC[g] + '">' + r['혼잡등급'] + '</div><div style="font-size:13px;color:var(--ink2)">예상 관객 약 ' + fmt(r['예측_관객']) + '명 (지하철 이용 기준 환산)</div>' +
-    '<div class="row"><span>시작 / 예상 종료</span><div>' + r['시작'] + ' → ' + r['예상종료'] + (r['시간확정'] ? '' : ' <small style="color:var(--ink3)">(시작 시각 가정)</small>') + '</div>' +
-    '<span>역 도착 피크</span><div>' + r['역도착_피크'] + '쯤 올림픽공원역</div>' +
-    '<span>추천 계획</span><div>' + r['추천계획'] + ' (출구 배정 + 2~4분 시차)</div>' +
-    '<span>평년 기온</span><div>' + r['평년기온'] + '°C (종료 시각 기준)' + (r['공휴일'] ? ' · 공휴일' : '') + '</div>' +
-    '<span>일정 출처</span><div style="font-size:13px">' + r['출처'] + '</div></div>' +
-    '<div class="cmp2"><div>지금처럼이면 최대 줄<b>' + fmt(r['지금처럼_최대줄']) + '명</b>위험(E·F) ' + r['위험지속_분'] + '분 지속</div><div>EXIT NAVI 최대 줄<b style="color:#2a78d6">' + fmt(r['EXIT_NAVI_최대줄']) + '명</b>위험 0분 (플로어 2,000명 계획)</div></div>' +
-    '<div class="btns" style="margin-top:16px"><a class="btn" href="operator.html">운영자 방송판 →</a><a class="btn ghost" href="find.html">내 출구 찾기</a></div>' +
-    (r['가격확정'] ? '' : '<p style="font-size:12px;color:var(--ink3);margin-top:12px">* 가격 미공개: 2025년 공연 평균 가격으로 예측했어요.</p>');
-}
-renderList(); renderDetail();
-(function () {
-  var P = window.KSPO_FC.pattern; if (!P) return;
-  var mx = Math.max.apply(null, P.months.map(function (m) { return m.expected_sessions; }));
-  var col = function (g) { return g === '매우 혼잡' ? '#e34948' : g === '혼잡' ? '#eda100' : g === '보통' ? '#1baf7a' : '#b9b8b0'; };
-  document.getElementById('mgrid').innerHTML = P.months.map(function (m) {
-    var top = [['금', m.fri], ['토', m.sat], ['일', m.sun]].sort(function (a, b) { return b[1] - a[1]; }).filter(function (x) { return x[1] > 0; }).slice(0, 2).map(function (x) { return x[0]; }).join('·');
-    return '<div class="mc">' + (m.low_confidence ? '<span class="lc">자료 적음</span>' : '') + '<div class="mn">' + m.month + '월</div>' +
-      '<div class="bar"><i style="width:' + (m.expected_sessions / mx * 100) + '%;background:' + col(m.congestion) + '"></i></div>' +
-      '<div class="s"><b style="color:' + col(m.congestion) + '">' + m.congestion + '</b><br>공연 약 ' + m.expected_sessions + '회 · 주로 ' + (top || '-') + '<br>보통 ' + m.typical_start + ' 시작</div></div>';
+  function gradeRow(a) { var best = G.curve[0]; G.curve.forEach(function (c) { if (Math.abs(c.a - a) < Math.abs(best.a - a)) best = c; }); return best; }
+  function gi(ef) { return ef >= 20 ? 2 : ef >= 10 ? 1 : 0; }
+  function los(q) { return q <= 142 ? 'A~C' : q <= 333 ? 'D' : q <= 500 ? 'E' : 'F'; }
+  function clock(hm, add) { var p = hm.split(':'), m = +p[0] * 60 + +p[1] + Math.round(add); m = (m + 1440) % 1440; return String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0'); }
+  function floorPlan(a) { var fl = Math.max(0, a - SEATS); return fl < 1000 ? 0 : fl < 3000 ? 2000 : 4000; }
+
+  // 1. 공연 목록 (월별 묶음)
+  var sel = document.getElementById('ses'), by = {};
+  S.forEach(function (r, i) { var k = r.date.slice(0, 7); (by[k] = by[k] || []).push(i); });
+  sel.innerHTML = Object.keys(by).sort().map(function (k) {
+    var p = k.split('-');
+    return '<optgroup label="' + p[0] + '년 ' + (+p[1]) + '월">' + by[k].map(function (i) {
+      var r = S[i], d = r.date.split('-'); return '<option value="' + i + '">' + (+d[1]) + '/' + (+d[2]) + '(' + r.dow + ') ' + r.start + ' · ' + esc(r.name) + '</option>';
+    }).join('') + '</optgroup>';
   }).join('');
-  document.getElementById('wgrid').innerHTML = P.weekdays.map(function (w) {
-    return '<div>' + w.weekday + '요일 (2025년 ' + w.sessions + '회)<b style="color:' + col(w.congestion) + '">' + w.congestion + '</b>중간 관객 약 ' + (w.median_audience / 10000).toFixed(1) + '만 명 · 보통 ' + w.typical_start + ' 시작</div>';
-  }).join('');
-})();
-(function () {
-  var G = window.KSPO_FC.grade; if (!G) return;
-  var C = G.curve, W = 900, H = 300, ml = 52, mr = 16, mt = 16, mb = 40, x0 = C[0].a, x1 = C[C.length - 1].a, ym = 30;
-  var X = function (a) { return ml + (a - x0) / (x1 - x0) * (W - ml - mr); }, Y = function (v) { return mt + (1 - v / ym) * (H - mt - mb); };
-  var h = '';
-  h += '<rect x="' + X(x0) + '" y="' + mt + '" width="' + (X(G.t1) - X(x0)) + '" height="' + (H - mt - mb) + '" fill="#e8f6ef"/>';
-  h += '<rect x="' + X(G.t1) + '" y="' + mt + '" width="' + (X(G.t2) - X(G.t1)) + '" height="' + (H - mt - mb) + '" fill="#fdf3dc"/>';
-  h += '<rect x="' + X(G.t2) + '" y="' + mt + '" width="' + (X(x1) - X(G.t2)) + '" height="' + (H - mt - mb) + '" fill="#fdecec"/>';
-  [0, 10, 20, 30].forEach(function (v) { h += '<line x1="' + ml + '" x2="' + (W - mr) + '" y1="' + Y(v) + '" y2="' + Y(v) + '" stroke="#e6e5e0"/><text x="' + (ml - 8) + '" y="' + (Y(v) + 4) + '" font-size="12" fill="#8a8983" text-anchor="end">' + v + '분</text>'; });
-  for (var a = 6000; a <= 18000; a += 2000) h += '<text x="' + X(a) + '" y="' + (H - 16) + '" font-size="12" fill="#8a8983" text-anchor="middle">' + (a / 10000).toFixed(1) + '만</text>';
-  h += '<text x="' + (W - mr) + '" y="' + (H - 2) + '" font-size="12" fill="#52514e" text-anchor="end">관객 수 →</text>';
-  h += '<path d="' + C.map(function (c, i) { return (i ? 'L' : 'M') + X(c.a).toFixed(1) + ',' + Y(c.ef).toFixed(1); }).join('') + '" fill="none" stroke="#0b0b0b" stroke-width="2"/>';
-  [[G.t1, 10, '보통 | 혼잡'], [G.t2, 20, '혼잡 | 매우 혼잡']].forEach(function (t) {
-    h += '<line x1="' + X(t[0]) + '" x2="' + X(t[0]) + '" y1="' + mt + '" y2="' + (H - mb) + '" stroke="#52514e" stroke-dasharray="4 4"/>' +
-      '<circle cx="' + X(t[0]) + '" cy="' + Y(t[1]) + '" r="4.5" fill="#0b0b0b" stroke="#fff" stroke-width="2"/>' +
-      '<text x="' + (X(t[0]) + 6) + '" y="' + (mt + 14) + '" font-size="12" font-weight="700" fill="#0b0b0b">' + t[2] + ' · ' + t[0].toLocaleString() + '명</text>';
-  });
-  h += '<text x="' + (ml + 8) + '" y="' + (mt + 14) + '" font-size="12" fill="#52514e">지금처럼 퇴장 시 위험(E·F) 지속 시간</text>';
-  h += '<line id="gx" y1="' + mt + '" y2="' + (H - mb) + '" stroke="#0b0b0b" opacity="0"/><rect id="gh" x="' + ml + '" y="0" width="' + (W - ml - mr) + '" height="' + H + '" fill="transparent"/>';
-  var svg = document.getElementById('gc'); svg.innerHTML = h;
-  var tip = document.getElementById('gtip'), gx = svg.querySelector('#gx');
-  svg.querySelector('#gh').onmousemove = function (e) {
-    var r = svg.getBoundingClientRect(), sx = (e.clientX - r.left) / r.width * W, a = x0 + (sx - ml) / (W - ml - mr) * (x1 - x0), best = C[0];
-    C.forEach(function (c) { if (Math.abs(c.a - a) < Math.abs(best.a - a)) best = c; });
-    gx.setAttribute('x1', X(best.a)); gx.setAttribute('x2', X(best.a)); gx.setAttribute('opacity', .35);
-    tip.style.display = 'block'; tip.style.left = (X(best.a) / W * r.width + 14) + 'px'; tip.style.top = (Y(best.ef) / H * r.height + 14) + 'px';
-    tip.innerHTML = '관객 ' + best.a.toLocaleString() + '명<br>지금처럼 최대 줄 ' + best.q.toLocaleString() + '명<br><b>위험 지속 ' + best.ef + '분</b>';
-  };
-  svg.querySelector('#gh').onmouseleave = function () { tip.style.display = 'none'; gx.setAttribute('opacity', 0); };
+  var qs = location.hash.match(/s=(\d+)/); if (qs && S[+qs[1]]) st.s = +qs[1];
+  var qa = location.hash.match(/a=(\d+)/); if (qa) st.a = Math.max(5000, Math.min(18000, Math.round(+qa[1] / 250) * 250));
+  sel.value = st.s;
+  sel.onchange = function () { st.s = +sel.value; render(); };
+
+  // 2. 관객 수
+  var rng = document.getElementById('aud'); rng.value = st.a;
+  rng.oninput = function () { st.a = +rng.value; render(); };
+  var CH = [[7000, '절반쯤 (7천)'], [10000, '1만'], [12000, '1.2만'], [14000, '좌석 매진 (약 1.4만)'], [16000, '매진 + 플로어 2천'], [18000, '매진 + 플로어 4천']];
+  document.getElementById('chips').innerHTML = CH.map(function (c) { return '<button data-a="' + c[0] + '">' + c[1] + '</button>'; }).join('');
+  document.querySelectorAll('#chips button').forEach(function (b) { b.onclick = function () { st.a = +b.dataset.a; rng.value = st.a; render(); }; });
+
+  function render() {
+    var r = S[st.s], a = st.a, gr = gradeRow(a), g = gi(gr.ef);
+    var nq = lerp(a, 'nav_maxq'), nw = lerp(a, 'nav_wait'), cw = lerp(a, 'cur_wait'), cc = lerp(a, 'cur_clear90'), nc = lerp(a, 'nav_clear90'), dz = Math.round(lerp(a, 'delayed_zones'));
+    var fl = Math.max(0, a - SEATS), plan = floorPlan(a);
+    history.replaceState(null, '', location.pathname + location.search + '#s=' + st.s + '&a=' + a);
+    document.getElementById('sesInfo').innerHTML = '<b>' + esc(r.name) + '</b><br>' + r.date + ' (' + r.dow + ') · ' + r.round + '회차' + (r.hol ? ' · 공휴일' : '') + '<br>' +
+      '시작 ' + r.start + (r.timeConf ? '' : '<span class="tagw">시작 시각 미공개 · 가정</span>') + ' → 예정 종료 약 ' + r.end + '<br><span style="font-size:12.5px;color:var(--ink3)">일정 출처: ' + esc(r.src) + '</span>';
+    document.getElementById('audV').innerHTML = fmt(a) + '명<small>' + (fl > 250 ? '좌석 매진 + 플로어 약 ' + fmt(Math.round(fl / 50) * 50) : fl > 0 ? '좌석 매진 (약 ' + fmt(SEATS) + '석)' : '좌석의 ' + Math.round(a / SEATS * 100) + '%') + '</small>';
+    document.querySelectorAll('#chips button').forEach(function (b) { b.classList.toggle('on', +b.dataset.a === a); });
+    document.getElementById('ref').innerHTML = '참고: 이 회차는 공개된 가격·요일·시간으로 추정하면 약 <b>' + fmt(r.refLo) + '~' + fmt(r.refHi) + '명</b>이에요(예측 오차 ±24%라 범위로만 보여 드려요). 실제 판매 좌석 수를 알면 그 숫자로 고르는 게 가장 정확해요.' +
+      '<button id="toRef">참고 범위 가운데로</button>';
+    document.getElementById('toRef').onclick = function () { st.a = Math.round((r.refLo + r.refHi) / 2 / 250) * 250; rng.value = st.a; render(); };
+    var endC = r.end;
+    document.getElementById('out').innerHTML =
+      '<div class="step"><i>3</i>계산 결과</div>' +
+      '<div class="grade"><span class="gb g' + g + '">' + GN[g] + '</span><p>관객 ' + fmt(a) + '명이 지금처럼 가까운 출구로 한꺼번에 나가면, 가장 붐비는 출구가 <b>위험 등급(E·F)으로 ' + gr.ef + '분</b> 이어져요.' + (g === 0 && gr.ef > 0 ? ' <b>보통이어도 위험한 시간이 있어요.</b>' : '') + '</p></div>' +
+      '<div class="cmp3"><div class="cur"><h4>지금처럼</h4><div class="v">' + fmt(gr.q) + '명<small>한 출구 최대 줄 · ' + los(gr.q) + '등급</small></div>' +
+        '<ul><li>위험(E·F) 지속 <b>' + gr.ef + '분</b></li><li>1인 평균 대기 <b>' + cw.toFixed(1) + '분</b></li><li>90% 퇴장 <b>종료 후 ' + cc.toFixed(1) + '분</b></li></ul></div>' +
+      '<div class="nav"><h4 style="color:#1f5fb4">EXIT NAVI 안내대로</h4><div class="v" style="color:#1f5fb4">' + fmt(nq) + '명<small>한 출구 최대 줄 · ' + los(nq) + '등급</small></div>' +
+        '<ul><li>위험(E·F) 지속 <b>0분</b></li><li>1인 평균 대기 <b>' + nw.toFixed(1) + '분</b> <span style="font-size:11.5px">(자리 대기 포함)</span></li><li>90% 퇴장 <b>종료 후 ' + nc.toFixed(1) + '분</b></li></ul></div></div>' +
+      '<div class="rows2">' +
+        '<span>추천 계획</span><div>' + (dz > 0 ? '출구 재배정 + <b>' + dz + '개 구역</b> 2~4분 시차' : '출구 재배정만 (시차 없이도 충분)') + '<br><span style="font-size:12.5px;color:var(--ink3)">운영자 화면에서는 가장 가까운 "플로어 ' + fmt(plan) + '명" 계획을 열어요</span></div>' +
+        '<span>퇴장 시각</span><div>예정 종료 ' + endC + ' 기준, 90%가 <b>' + clock(endC, nc) + '</b>쯤 건물 밖 (지금처럼이면 ' + clock(endC, cc) + ')</div>' +
+        '<span>역 도착</span><div>올림픽공원역 도착이 가장 많은 때 <b>' + clock(endC, 8) + '</b>쯤 (출구에서 도보 약 6분)</div>' +
+        '<span>주의</span><div style="font-size:13px;color:var(--ink2)">앵콜 등으로 실제 퇴장은 예정 종료보다 늦어지는 일이 많아요(2025년 지하철 분석상 평균 약 57분). 시각은 실제 종료에 맞춰 다시 보세요.</div>' +
+      '</div>' +
+      '<div class="btns2"><a class="btn" href="operator.html?f=' + plan + '">운영자 방송판 열기 →</a><a class="btn ghost" href="find.html">내 출구 찾기</a></div>' +
+      '<p class="why">계산은 모두 퇴장 시뮬레이션 결과예요. 관객 수만 바꾸고 나머지(구역 배치·출구 용량·일어나는 속도)는 같게 두었어요. 관객 수를 정확히 넣을수록 결과도 정확해져요.</p>';
+    drawCurve(a);
+  }
+
+  // 등급 기준 그래프 + 선택한 관객 수 표시
+  function drawCurve(sa) {
+    var C = G.curve, W = 900, H = 300, ml = 52, mr = 16, mt = 16, mb = 40, x0 = C[0].a, x1 = C[C.length - 1].a, ym = 30;
+    var X = function (a) { return ml + (a - x0) / (x1 - x0) * (W - ml - mr); }, Y = function (v) { return mt + (1 - v / ym) * (H - mt - mb); };
+    var h = '';
+    h += '<rect x="' + X(x0) + '" y="' + mt + '" width="' + (X(G.t1) - X(x0)) + '" height="' + (H - mt - mb) + '" fill="#e8f6ef"/>';
+    h += '<rect x="' + X(G.t1) + '" y="' + mt + '" width="' + (X(G.t2) - X(G.t1)) + '" height="' + (H - mt - mb) + '" fill="#fdf3dc"/>';
+    h += '<rect x="' + X(G.t2) + '" y="' + mt + '" width="' + (X(x1) - X(G.t2)) + '" height="' + (H - mt - mb) + '" fill="#fdecec"/>';
+    [0, 10, 20, 30].forEach(function (v) { h += '<line x1="' + ml + '" x2="' + (W - mr) + '" y1="' + Y(v) + '" y2="' + Y(v) + '" stroke="#e6e5e0"/><text x="' + (ml - 8) + '" y="' + (Y(v) + 4) + '" font-size="12" fill="#8a8983" text-anchor="end">' + v + '분</text>'; });
+    for (var a = 6000; a <= 18000; a += 2000) h += '<text x="' + X(a) + '" y="' + (H - 16) + '" font-size="12" fill="#8a8983" text-anchor="middle">' + (a / 10000).toFixed(1) + '만</text>';
+    h += '<text x="' + (W - mr) + '" y="' + (H - 2) + '" font-size="12" fill="#52514e" text-anchor="end">관객 수 →</text>';
+    h += '<path d="' + C.map(function (c, i) { return (i ? 'L' : 'M') + X(c.a).toFixed(1) + ',' + Y(c.ef).toFixed(1); }).join('') + '" fill="none" stroke="#0b0b0b" stroke-width="2"/>';
+    [[G.t1, 10, '보통 | 혼잡'], [G.t2, 20, '혼잡 | 매우 혼잡']].forEach(function (t) {
+      h += '<line x1="' + X(t[0]) + '" x2="' + X(t[0]) + '" y1="' + mt + '" y2="' + (H - mb) + '" stroke="#52514e" stroke-dasharray="4 4"/>' +
+        '<text x="' + (X(t[0]) + 6) + '" y="' + (mt + 14) + '" font-size="12" font-weight="700" fill="#0b0b0b">' + t[2] + ' · ' + t[0].toLocaleString() + '명</text>';
+    });
+    var gr = gradeRow(sa);
+    h += '<line x1="' + X(sa) + '" x2="' + X(sa) + '" y1="' + mt + '" y2="' + (H - mb) + '" stroke="#2a78d6" stroke-width="2.5"/>' +
+      '<circle cx="' + X(sa) + '" cy="' + Y(gr.ef) + '" r="6" fill="#2a78d6" stroke="#fff" stroke-width="2"/>' +
+      '<text x="' + (X(sa) + (sa > 15500 ? -8 : 8)) + '" y="' + (Y(gr.ef) - 10) + '" font-size="13" font-weight="700" fill="#1f5fb4" text-anchor="' + (sa > 15500 ? 'end' : 'start') + '">선택 ' + sa.toLocaleString() + '명 · ' + gr.ef + '분</text>';
+    document.getElementById('gc').innerHTML = h;
+  }
   document.getElementById('gsum').innerHTML =
     '<div>보통<b style="color:#1baf7a">' + G.t1.toLocaleString() + '명 미만</b>위험 지속 10분 미만</div>' +
     '<div>혼잡<b style="color:#eda100">' + G.t1.toLocaleString() + '~' + G.t2.toLocaleString() + '명</b>위험 지속 10~20분</div>' +
     '<div>매우 혼잡<b style="color:#e34948">' + G.t2.toLocaleString() + '명 이상</b>위험 지속 20분 이상</div>';
+  render();
 })();
 </script>
 <script src="js/nav.js"></script>
-<script src="js/tour.js?v=2"></script>
+<script src="js/tour.js?v=3"></script>
 <script src="js/pwa.js"></script>
 </body>
 </html>

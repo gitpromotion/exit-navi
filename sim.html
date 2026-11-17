@@ -469,7 +469,7 @@ syncC();refresh();setTP(0);resizeAll();
 window.__k={setMode,setTP,setTA,setCond:(m,f,c)=>{mth=m;flr=f;cpl=c;[['segM',m],['segF',f],['segC',c]].forEach(([id,v])=>document.querySelectorAll(`#${id} button`).forEach(b=>b.classList.toggle('on',b.dataset.v==String(v))));syncC();refresh();},select:o=>{vC.sels=o?[o]:[];vC.sel=o;drawAna();},play:playToggle};
 })();
 </script>
-<script src="js/tour.js?v=2"></script>
+<script src="js/tour.js?v=3"></script>
 <script src="js/pwa.js"></script>
 </body>
 </html>

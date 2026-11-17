@@ -173,6 +173,7 @@ langBox.querySelectorAll('button').forEach(function (b) { b.onclick = function (
 document.querySelectorAll('#floor button').forEach(function (b) {
   b.onclick = function () { f = +b.dataset.f; document.querySelectorAll('#floor button').forEach(function (x) { x.classList.toggle('on', x === b); }); render(); };
 });
+(function () { var q = location.search.match(/[?&]f=(0|2000|4000)\b/); if (q) { f = +q[1]; document.querySelectorAll('#floor button').forEach(function (x) { x.classList.toggle('on', +x.dataset.f === f); }); } })();
 var sel = document.getElementById('closed');
 DOORS.forEach(function (d) { var o = document.createElement('option'); o.value = d.id; o.textContent = d.gate + ' ' + doorName(d.id) + ' 폐쇄'; sel.appendChild(o); });
 sel.onchange = function () { closedId = sel.value; stopSpeak(); render(); };
@@ -339,7 +340,7 @@ document.getElementById('bVoice').onclick = function () { BD.voice = !BD.voice; 
 document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && document.getElementById('board').classList.contains('on')) closeBoard(); });
 </script>
 <script src="js/nav.js"></script>
-<script src="js/tour.js?v=2"></script>
+<script src="js/tour.js?v=3"></script>
 <script src="js/pwa.js"></script>
 </body>
 </html>
