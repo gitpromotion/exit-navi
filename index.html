@@ -27,7 +27,7 @@
 .tour em{display:block;font-style:normal;font-size:12px;color:var(--ink3);margin-top:8px}
 @media(max-width:960px){.tour{grid-template-columns:1fr 1fr}}
 @media(max-width:560px){.tour{grid-template-columns:1fr}}
-.hero h1,.hero p{word-break:keep-all}.hero .sub{margin-top:18px;display:flex;gap:18px;font-size:14px}.hero .sub a{color:#9e9d94;font-weight:600;text-decoration:none}.hero .sub a:hover{color:#fff}
+.hero h1,.hero p{word-break:keep-all}.hero .btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:350px}.hero .btn{justify-content:center;text-align:center;white-space:nowrap}.hero .btn.mini{display:inline-flex;align-items:center;gap:7px;padding:9px 14px;font-size:14px;font-weight:600;color:#c3c2b7;border:1px solid #3a3936;background:transparent}.hero .btn.mini:hover{color:#fff;border-color:#8a897f}
 </style>
 </head>
 <body>
@@ -42,8 +42,9 @@
         <div class="btns">
           <a class="btn light" href="find.html">내 구역 출구 찾기 →</a>
           <a class="btn ghost" href="sim.html">3D 시뮬레이션 보기</a>
+          <a class="btn mini" href="#tour"><svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>3분 둘러보기</a>
+          <a class="btn mini" href="#" data-install><svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><rect x="6" y="2.5" width="12" height="19" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10.5 18h3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>앱으로 설치</a>
         </div>
-        <div class="sub"><a href="#tour">▶ 3분 둘러보기</a><a href="#" data-install>📱 앱으로 설치</a></div>
       </div>
       <div class="shot"><img src="img/pres.jpg" alt="EXIT NAVI 3D 시뮬레이션 발표 모드: 현재 방식과 최적 방식을 나란히 비교한 화면"></div>
     </div>
