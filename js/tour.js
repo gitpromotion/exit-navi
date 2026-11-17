@@ -35,8 +35,9 @@
     '#tourbar .tb-b a{font-size:13px;font-weight:700;text-decoration:none;border-radius:9px;padding:7px 14px;border:1px solid #3a3a37;color:#fff}' +
     '#tourbar .tb-b a.nx{background:#fff;color:#0b0b0b;border-color:#fff}' +
     '#tourbar.min .tb-t,#tourbar.min .tb-b{display:none}' +
+    '@media(max-width:600px){#tourbar{right:8px;left:8px;bottom:8px;width:auto;padding:10px 12px;border-radius:14px}#tourbar .tb-t{font-size:12.5px;margin:6px 0 8px}#tourbar .tb-h b{font-size:13.5px}#tourbar .tb-dots{display:none}#tourbar .tb-b a{padding:6px 10px;font-size:12px}body{padding-bottom:190px}}' +
     '@media print{#tourbar{display:none}}';
-  if (/sim\.html$/.test(location.pathname)) css.textContent += '#tourbar{right:auto;left:16px;bottom:178px}';
+  if (/sim\.html$/.test(location.pathname)) css.textContent += '@media(min-width:601px){#tourbar{right:auto;left:16px;bottom:178px}}';
   document.head.appendChild(css);
 
   var bar = document.createElement('div');

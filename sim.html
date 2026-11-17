@@ -2,7 +2,16 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0b0b0b">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="EXIT NAVI">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+
 <title>3D 시뮬레이션 · KSPO DOME 퇴장 3D 시뮬레이션</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap">
 <style>
@@ -70,7 +79,25 @@ canvas{display:block;touch-action:none}
 .annlist div{padding:2px 0;border-bottom:1px dashed var(--line)} .annlist div:last-child{border:0}
 .annlist .now{color:#123e73;font-weight:700}
 .note{font-size:11px;color:var(--ink2);margin-top:14px;line-height:1.5}
-@media(max-width:900px){.panes{grid-template-columns:1fr;grid-template-rows:1fr 1fr}.mode.show{flex-direction:column;height:auto}.stage{height:62vh}.panel{width:auto}}
+@media(max-width:900px){
+.mode.show{flex-direction:column;height:auto}
+.panes{flex:none;grid-template-columns:1fr;grid-template-rows:37vh 37vh}
+.pane{border-right:0;border-bottom:1px solid var(--line)}
+.stage{flex:none;height:58vh}
+.panel{width:auto;border-left:0;border-top:1px solid var(--line)}
+}
+@media(max-width:600px){
+.top{gap:8px;padding:8px 10px}.top h1{display:none}.tabs{margin-left:auto}.tabs button{padding:6px 10px}
+.ph{left:8px;right:8px;top:8px}.ph .nm{font-size:14px;padding:3px 8px}.ph .nm small{font-size:10px}
+.ph .stat{font-size:10.5px;padding:4px 7px}.ph .stat b{font-size:15px}
+.warnbox{left:8px;right:8px;bottom:8px}.warn,.ann{font-size:11.5px;padding:5px 8px}
+.bottom{padding:8px 10px 12px}.caption{font-size:14px;min-height:0}.caption small{display:block;margin:2px 0 0;font-size:11.5px}
+.tlrow{flex-wrap:wrap;gap:8px}.tlrow canvas{order:-1;flex:1 1 100%;height:80px}
+.ctrl{flex-direction:row;flex:1 1 100%;flex-wrap:wrap}.ctrl button{flex:1}
+.big{min-width:0}
+.views{left:8px;top:8px;flex-wrap:wrap;right:8px}.hint{display:none}
+.panel{padding:12px 12px 24px}
+}
 </style>
 </head>
 <body>
@@ -212,7 +239,7 @@ function View(canvas,opt){
   const ctx=canvas.getContext('2d');let W=0,H=0,dpr=1;const self={key:opt.key,sels:[],sel:null,showRoutes:false,showFlow:true,hits:[],cam:opt.cam||cam};
   self.resize=()=>{dpr=window.devicePixelRatio||1;const b=canvas.getBoundingClientRect();W=b.width;H=b.height;canvas.width=W*dpr;canvas.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);};
   function proj(x,y,z){const c=self.cam,cy=Math.cos(c.yaw),sy=Math.sin(c.yaw),X=x*cy-y*sy,Y=x*sy+y*cy,Zz=z-6,cp=Math.cos(c.pitch),sp=Math.sin(c.pitch);
-    const up=Y*sp+Zz*cp,depth=Y*cp-Zz*sp,d=230+depth,f=Math.min(W*0.95,H*1.1)*1.32*c.zoom*(opt.scale||1);return [W/2+X*f/d,H*(ST.on?0.40:0.55)-up*f/d,d];}
+    const up=Y*sp+Zz*cp,depth=Y*cp-Zz*sp,d=230+depth,f=Math.min(W*0.95,H*1.1)*1.32*(innerWidth<=900?Math.max(0.72,Math.min(1,W/H/1.6)):1)*c.zoom*(opt.scale||1);return [W/2+X*f/d,H*(ST.on?0.40:0.55)-up*f/d,d];}
   self.proj=proj;
   const isSel=(type,id)=>self.sels.some(x=>x.type===type&&x.id===id);
   self.isSel=isSel;
@@ -442,6 +469,7 @@ syncC();refresh();setTP(0);resizeAll();
 window.__k={setMode,setTP,setTA,setCond:(m,f,c)=>{mth=m;flr=f;cpl=c;[['segM',m],['segF',f],['segC',c]].forEach(([id,v])=>document.querySelectorAll(`#${id} button`).forEach(b=>b.classList.toggle('on',b.dataset.v==String(v))));syncC();refresh();},select:o=>{vC.sels=o?[o]:[];vC.sel=o;drawAna();},play:playToggle};
 })();
 </script>
-<script src="js/tour.js?v=1"></script>
+<script src="js/tour.js?v=2"></script>
+<script src="js/pwa.js"></script>
 </body>
 </html>
