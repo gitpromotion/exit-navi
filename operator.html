@@ -155,6 +155,7 @@ select.emg{border-color:#e34948;color:#8f1d1c;font-weight:700;background:#fdecec
       <div class="g"><button class="btn-s dark" id="sheetBtn" style="font-size:14px;padding:9px 14px">🖨 당일 체크리스트 (A4)</button></div>
       <div class="g"><label for="closed">🚨 비상 모드 (출구 폐쇄)</label><select id="closed"><option value="">평상시 — 폐쇄 없음</option></select></div>
       <div class="g"><label>방송 언어</label><div class="seg" id="lang"></div></div>
+      <div class="g"><label>오늘 날씨</label><div class="seg" id="wx"></div></div>
     </div>
     <div class="banner" id="banner"></div>
     <div class="summary" id="sum"></div>
@@ -187,8 +188,10 @@ select.emg{border-color:#e34948;color:#8f1d1c;font-weight:700;background:#fdecec
       <div style="display:flex;height:26px;border-radius:6px;overflow:hidden;font-size:12px;font-weight:700;color:#fff">
         <div style="width:47%;background:#2a78d6;display:flex;align-items:center;padding-left:8px">지하철 47%</div>
         <div style="width:1%;background:#eda100;margin-left:2px"></div>
-        <div style="flex:1;background:#b9b8b0;margin-left:2px;display:flex;align-items:center;padding-left:8px;color:#0b0b0b">자가용·택시·도보 등 약 53%</div></div>
-      <div style="font-size:12px;color:var(--ink2);margin-top:4px"><span style="display:inline-block;width:10px;height:10px;background:#eda100;border-radius:2px;margin-right:4px"></span>버스 1% 미만 — 서울시 버스 정류장 승하차(2024.12~2025.12) 분석 결과, 공연 후 버스 승차는 거의 늘지 않음</div></div>
+        <div style="width:10%;background:#6250d6;margin-left:2px;display:flex;align-items:center;padding-left:6px">자가용 4~16%</div>
+        <div style="flex:1;background:#b9b8b0;margin-left:2px;display:flex;align-items:center;padding-left:8px;color:#0b0b0b">택시·도보·셔틀 등</div></div>
+      <div style="font-size:12px;color:var(--ink2);margin-top:4px"><span style="display:inline-block;width:10px;height:10px;background:#eda100;border-radius:2px;margin-right:4px"></span>버스 1% 미만(서울시 버스 승하차 분석) · 자가용 약 4~16%(올림픽공원 주차 데이터: 공연 날 약 540대 더 주차, 예정 종료 85분 뒤쯤 절반 출차, 늘어난 출차의 83%가 남2문·동2문)</div></div>
+    <div id="park" style="margin-top:18px"></div>
     <p style="font-size:14px;color:var(--ink2);margin:12px 0 0"><b>역 도착 예보:</b> 출구 줄이 사라지면 관객이 더 빨리, 한꺼번에 역에 도착합니다. 이 예보를 서울교통공사·역무실에 미리 공유하면 개찰구 개방, 임시 열차 투입, 승강장 안전요원 배치 시점을 정할 수 있습니다.</p>
     <p style="font-size:12px;color:var(--ink3);margin:6px 0 0">2025년 공연 116회의 지하철 승하차 분석: 공연 후 늘어난 승차의 69.7%가 9호선 올림픽공원역, 24.9%가 5호선 올림픽공원역(합계 94.6%). 관객의 47%가 지하철을 이용하고 역까지 약 6분 걷는다고 가정한 추정치입니다.</p>
   </div>
@@ -207,11 +210,14 @@ select.emg{border-color:#e34948;color:#8f1d1c;font-weight:700;background:#fdecec
 <script src="js/data2.js?v=2"></script>
 <script src="js/data_emg.js?v=2"></script>
 <script src="js/common.js?v=5"></script>
+<script src="js/data_park.js?v=1"></script>
 <script>
+var wx = 'clear';
 var f = 2000, closedId = '', lang = 'ko', E = window.KSPO_EMG;
 var langBox = document.getElementById('lang');
 Object.keys(LANGS).forEach(function (k) { var b = document.createElement('button'); b.textContent = LANGS[k].name; b.dataset.l = k; if (k === lang) b.className = 'on'; langBox.appendChild(b); });
 langBox.querySelectorAll('button').forEach(function (b) { b.onclick = function () { lang = b.dataset.l; langBox.querySelectorAll('button').forEach(function (x) { x.classList.toggle('on', x === b); }); stopSpeak(); render(); }; });
+(function () { var box = document.getElementById('wx'); Object.keys(WX).forEach(function (k) { var b = document.createElement('button'); b.textContent = WX[k].ic + ' ' + WX[k].name; b.dataset.w = k; if (k === wx) b.className = 'on'; b.onclick = function () { wx = k; box.querySelectorAll('button').forEach(function (x) { x.classList.toggle('on', x === b); }); stopSpeak(); render(); }; box.appendChild(b); }); })();
 var FC_ = floorControl(document.getElementById('floor'), f, function (v) { f = v; render(); });
 (function () { var q = location.search.match(/[?&]f=(\d+)/); if (q && FLOORS.indexOf(+q[1]) >= 0) { f = +q[1]; FC_.set(f, false); } })();
 var sel = document.getElementById('closed');
@@ -228,6 +234,7 @@ function lines(speech) {
   var out = [];
   if (closedId) out.push(closedLine(closedId, lang));
   out.push(accessLine(accGate(), lang));
+  if (WX[wx].ann) out.push(WX[wx].ann);
   anns.forEach(function (a) { out.push((speech ? whenL(a.t, lang) + ' ' : '') + annLine(a.t, a.parts, lang, speech)); });
   return out;
 }
@@ -261,6 +268,7 @@ function render() {
   }
   html += '<li style="border-color:#99d5cb;background:#f2faf8"><div class="t" style="color:#0f766e">우선 퇴장<small>종료 직후 · 교통약자</small></div><div class="tx">♿ 장애인석 82석 + 동반자 → <span class="gt" style="background:' + GATE[accGate()] + '">' + accGate() + '</span>' + accDoors() + ' (같은 층, 계단 없음)' +
     (lang === 'ko' ? '' : '<span class="say">' + accessLine(accGate(), lang) + '</span>') + '</div><div class="bt"><button data-s="-2">🔊 듣기</button><button data-c="-2">복사</button></div></li>';
+  if (WX[wx].ann) html += '<li style="border-color:#e3cf9f;background:#fffaf0"><div class="t" style="color:#8a6a1f">' + WX[wx].ic + ' 날씨<small>종료 직후 · 전체</small></div><div class="tx">' + WX[wx].ann + (lang === 'ko' ? '' : '<span class="say">(한국어 방송 후 안내 요원이 손짓으로 안내)</span>') + '</div><div class="bt"><button data-s="-3">🔊 듣기</button><button data-c="-3">복사</button></div></li>';
   html += anns.map(function (a, i) {
     var parts = a.parts.map(function (p) { return '<span class="gt" style="background:' + GATE[p.gate] + '">' + p.gate + '</span>' + ranges(p.zones) + '구역'; }).join('<br>');
     var say = lang === 'ko' ? '' : '<span class="say">' + annLine(a.t, a.parts, lang, false) + '</span>';
@@ -268,8 +276,8 @@ function render() {
       '<div class="tx">' + parts + say + '</div><div class="bt"><button data-s="' + i + '">🔊 듣기</button><button data-c="' + i + '">복사</button></div></li>';
   }).join('');
   var tl = document.getElementById('tl'); tl.innerHTML = html;
-  function textOf(i, speech) { if (i === -2) return speech ? accessLine(accGate(), lang).replace(/^\[[^\]]*\]\s*/, '') : accessLine(accGate(), lang); return i < 0 ? closedLine(closedId, lang) : (speech ? whenL(anns[i].t, lang) + ' ' : '') + annLine(anns[i].t, anns[i].parts, lang, speech); }
-  tl.querySelectorAll('button[data-s]').forEach(function (b) { b.onclick = function () { speak(textOf(+b.dataset.s, true), lang); }; });
+  function textOf(i, speech) { if (i === -3) return WX[wx].ann; if (i === -2) return speech ? accessLine(accGate(), lang).replace(/^\[[^\]]*\]\s*/, '') : accessLine(accGate(), lang); return i < 0 ? closedLine(closedId, lang) : (speech ? whenL(anns[i].t, lang) + ' ' : '') + annLine(anns[i].t, anns[i].parts, lang, speech); }
+  tl.querySelectorAll('button[data-s]').forEach(function (b) { b.onclick = function () { speak(textOf(+b.dataset.s, true), +b.dataset.s === -3 ? 'ko' : lang); }; });
   tl.querySelectorAll('button[data-c]').forEach(function (b) {
     b.onclick = function () {
       var s = textOf(+b.dataset.c, false);
@@ -278,6 +286,7 @@ function render() {
     };
   });
 
+  drawPark();
   document.getElementById('barkeys').innerHTML = '<span><i style="background:#b9b8b0"></i>' + cl + '</span><span><i style="background:#2a78d6"></i>EXIT NAVI' + (closedId ? ' 재계획' : '') + '</span><span><i style="border-left:1.5px dashed #e34948;width:0;border-radius:0"></i>333명 = 매우 혼잡 시작</span>';
   var peak = function (S, i) { return Math.max.apply(null, S.q.map(function (r) { return r[i]; })); };
   var rows = DOORS.map(function (d, i) { return { d: d, c: peak(cur, i), n: peak(plan, i) }; });
@@ -293,6 +302,15 @@ function render() {
   drawStation(kC, kN);
 }
 
+function drawPark() {
+  var cr = f > 0 ? PARK.cars.standing : PARK.cars.seated, p50 = parkAt(50), p85 = parkAt(85);
+  var cols = ['#c62f2e', '#e8833a', '#2a78d6', '#b9b8b0'];
+  document.getElementById('park').innerHTML = '<div style="font-size:13px;font-weight:700;margin-bottom:6px">🚗 주차장 출차 예보 <span style="font-weight:400;color:var(--ink3)">(2025 올림픽공원 주차 데이터)</span></div>' +
+    '<div class="stat2" style="margin-top:0"><div><b>' + fmt(cr[0]) + '~' + fmt(cr[1]) + '대</b>평소보다 더 들어오는 차 ' + (f > 0 ? '(스탠딩 공연)' : '(좌석 공연)') + '</div>' +
+    '<div><b>종료 75~90분 뒤</b>출차가 가장 몰리는 때 · 절반 ' + p50 + '분 · 85% ' + p85 + '분</div></div>' +
+    '<div style="display:flex;height:22px;border-radius:6px;overflow:hidden;font-size:11.5px;font-weight:700;color:#fff;margin-top:10px">' + PARK.gates.map(function (g, i) { return '<div style="width:' + g[1] + '%;background:' + cols[i] + ';display:flex;align-items:center;padding-left:6px;white-space:nowrap' + (i ? ';margin-left:2px' : '') + (i === 3 ? ';color:#0b0b0b' : '') + '">' + (g[1] >= 15 ? g[0] + ' ' + Math.round(g[1] - 0.01) + '%' : g[1] >= 9 ? g[0] : '') + '</div>'; }).join('') + '</div>' +
+    '<div style="font-size:12.5px;color:var(--ink2);margin-top:6px">공연 날 늘어난 출차가 나가는 주차장 출구. <b>남2문·동2문에 83%</b> → 차량과 보행 동선이 겹치는 두 곳에 <b>종료 45분 뒤부터 2시간</b> 교통 안내 인력을 배치하세요. 공연 차는 종료 시각까지 거의 그대로 있다가 한꺼번에 빠져나가요(공연 74일 vs 평소 165일, 차량별 33,000건 표본).</div>';
+}
 function drawStation(kC, kN) {
   var L = 40, a = stationCurve(kC, L), b = stationCurve(kN, L), W = 900, H = 260, ml = 48, mr = 16, mt = 14, mb = 34;
   var ym = Math.ceil(Math.max.apply(null, a.concat(b)) / 100) * 100 || 100;
@@ -387,16 +405,18 @@ function buildSheet() {
   var ds = today.getFullYear() + '. ' + (today.getMonth() + 1) + '. ' + today.getDate() + '.';
   function gt(g) { return '<span class="gt" style="background:' + GATE[g] + '">' + g + '</span>'; }
   var h = '<div class="sh"><div><h1>EXIT NAVI · 공연 당일 퇴장 운영 체크리스트</h1><div style="font-size:10px;color:#444;margin-top:2px">KSPO DOME · 구역별 출구 안내 + 시차 퇴장</div></div>' +
-    '<div class="meta">조건: 플로어(스탠딩) 관객 <b>' + (f ? fmt(f) + '명' : '없음') + '</b> · 총 관객 <b>' + fmt(N.total) + '명</b><br>' + (closedId ? '<b style="color:#c62f2e">비상: ' + DOORS[doorIdx[closedId]].gate + ' ' + doorName(closedId) + ' 폐쇄</b>' : '출구 9곳 모두 개방') + ' · 출력 ' + ds + '</div></div>';
+    '<div class="meta">조건: 플로어(스탠딩) 관객 <b>' + (f ? fmt(f) + '명' : '없음') + '</b> · 총 관객 <b>' + fmt(N.total) + '명</b><br>' + '날씨 <b>' + WX[wx].ic + ' ' + WX[wx].name + '</b> · ' + (closedId ? '<b style="color:#c62f2e">비상: ' + DOORS[doorIdx[closedId]].gate + ' ' + doorName(closedId) + ' 폐쇄</b>' : '출구 9곳 모두 개방') + ' · 출력 ' + ds + '</div></div>';
   h += '<div class="fill"><div>공연명</div><div>공연 날짜·종료 예정</div><div>방송 담당</div><div>운영 책임자</div></div>';
   if (closedId) h += '<div class="emgbox">🚨 ' + closedLine(closedId, 'ko').replace(/^\[[^\]]*\]\s*/, '') + ' — 아래 방송 순서는 폐쇄를 반영해 다시 짠 계획이에요.</div>';
   h += '<div class="skpi"><div>출구 최대 줄<b>' + fmt(C.maxq) + ' → ' + fmt(N.maxq) + '명</b>지금처럼 → EXIT NAVI</div><div>최악 혼잡 등급<b>' + C.los + ' → ' + N.los + '</b>위험(E·F) ' + C.ef + '분 → ' + N.ef + '분</div>' +
     '<div>1인 평균 대기<b>' + (C.wait + C.seat).toFixed(1) + ' → ' + (N.wait + N.seat).toFixed(1) + '분</b>줄 + 자리 대기</div><div>90% 퇴장<b>종료 후 ' + N.clear90 + '분</b>지금처럼 ' + C.clear90 + '분</div></div>';
   h += '<h2>1. 공연 전 점검<small>공연 시작 전 · 종료 30분 전</small></h2><ul class="ck">' +
     ['오늘 판매 좌석·플로어 인원 확인 → 운영자 화면 조건 맞추기', '방송 담당에게 아래 방송 문구 전달(4개 언어 필요 여부)', '전광판 담당: 📺 전광판 모드 화면 띄워 두기', '출구 9곳 개방·방풍실 통로 장애물 확인',
-     '장애인석 관객·동반자 인원 확인, 2-2문 안내 요원 1명 배치', '좌석 QR(구역별) 부착 상태 확인', '붐비는 출구(아래 3번 빨간 줄)에 안전요원 우선 배치', '무전 채널·비상 시 폐쇄 보고 절차 공유'].map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul>';
+     '장애인석 관객·동반자 인원 확인, 2-2문 안내 요원 1명 배치', '좌석 QR(구역별) 부착 상태 확인', '붐비는 출구(아래 3번 빨간 줄)에 안전요원 우선 배치', '무전 채널·비상 시 폐쇄 보고 절차 공유',
+     '🚗 주차장 남2문·동2문 출구에 교통 안내 인력 (종료 45분~2시간 뒤, 출차 83% 집중 · 보행 동선 분리)'].concat(WX[wx].ops.map(function (x) { return WX[wx].ic + ' ' + x; })).map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul>';
   h += '<h2>2. 방송 순서와 문구<small>공연 종료 = 0분 · 방송 후 ☐에 표시</small></h2><table><tr><th style="width:52px">시각</th><th style="width:150px">대상 → 출구</th><th>방송 문구 (한국어)</th><th class="c">✓</th></tr>';
   if (closedId) h += '<tr class="hot"><td><b>먼저</b></td><td>전체</td><td>' + closedLine(closedId, 'ko') + '</td><td class="c">☐</td></tr>';
+  if (WX[wx].ann) h += '<tr><td><b>종료 직후</b></td><td>전체 (' + WX[wx].ic + ' ' + WX[wx].name + ')</td><td>' + WX[wx].ann + '</td><td class="c">☐</td></tr>';
   h += '<tr><td><b>종료 직후</b></td><td>♿ 장애인석 82석 + 동반자 → ' + gt(accGate()) + doorName(accessDoor(ACCESS.segs[1], closedId)) + ' 등</td><td>' + accessLine(accGate(), 'ko') + '</td><td class="c">☐</td></tr>';
   A.forEach(function (a) {
     h += '<tr><td><b>' + (a.t === 0 ? '종료 직후' : a.t + '분 뒤') + '</b></td><td>' + a.parts.map(function (p) { return gt(p.gate) + ranges(p.zones) + '구역'; }).join('<br>') + '</td><td>' + annLine(a.t, a.parts, 'ko', false) + '</td><td class="c">☐</td></tr>';
