@@ -1,5 +1,5 @@
 // EXIT NAVI 서비스 워커: 한 번 열면 공연장처럼 인터넷이 약한 곳에서도 화면이 열리게 저장해 둡니다.
-var CACHE = 'exitnavi-v3';
+var CACHE = 'exitnavi-v5';
 var CORE = [
   './', 'index.html', 'find.html', 'operator.html', 'forecast.html', 'sim.html', 'qr.html', 'story.html', 'about.html',
   'css/site.css', 'js/common.js', 'js/data2.js', 'js/data_emg.js', 'js/data_forecast.js', 'js/data_calc.js', 'js/data_qr.js', 'js/nav.js', 'js/tour.js', 'js/pwa.js',

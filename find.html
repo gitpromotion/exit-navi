@@ -92,6 +92,15 @@ select,.seg button{font:inherit;font-size:15px;border:1px solid var(--line);back
 .trip div{background:var(--soft);border-radius:10px;padding:10px 6px;font-size:12px;color:var(--ink2)}
 .trip b{display:block;font-size:19px;color:var(--ink);font-variant-numeric:tabular-nums}
 .home p{font-size:13px;color:var(--ink2);margin:10px 0 0;line-height:1.7}
+.hseg{display:inline-flex;background:var(--soft);border-radius:8px;padding:2px;gap:2px}
+.hseg button{font:inherit;border:0;background:transparent;font-size:12.5px;padding:4px 10px;cursor:pointer;border-radius:6px;color:var(--ink)}
+.hseg button.on{background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.12);font-weight:700}
+.wxrow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:12px;font-size:12.5px;color:var(--ink2)}
+.wxtip{margin-top:8px;font-size:13.5px;line-height:1.7;border-radius:10px;padding:10px 12px;background:#f6f5f1;color:var(--ink)}
+.wxtip small{display:block;color:var(--ink3);font-size:11.5px;margin-top:2px}
+.gbar{display:flex;height:20px;border-radius:5px;overflow:hidden;font-size:11px;font-weight:700;color:#fff;margin:10px 0 4px}
+.gbar span{display:flex;align-items:center;padding-left:6px;white-space:nowrap;overflow:hidden}
+.gbar span+span{border-left:2px solid #fff}
 @media(max-width:900px){.app{grid-template-columns:1fr}.mapbox{position:static}}
 </style>
 </head>
@@ -122,8 +131,9 @@ select,.seg button{font:inherit;font-size:15px;border:1px solid var(--line);back
 </div>
 <script src="js/data2.js?v=2"></script>
 <script src="js/common.js?v=5"></script>
+<script src="js/data_park.js?v=1"></script>
 <script>
-var state = { z: null, f: 2000, lang: 'ko', end: '21:30' };
+var state = { z: null, f: 2000, lang: 'ko', end: '21:30', mode: 'subway', wx: 'clear' };
 function clock(base, add) { var p = base.split(':'), m = +p[0] * 60 + +p[1] + Math.round(add); m = (m + 1440) % 1440; return String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0'); }
 var sel = document.getElementById('zsel');
 ACCESS.segs.forEach(function (g) { var o = document.createElement('option'); o.value = g.id; o.textContent = '♿ ' + g.label; sel.appendChild(o); });
@@ -170,6 +180,8 @@ function render() {
   box.querySelectorAll('#lseg button').forEach(function (b) { b.onclick = function () { state.lang = b.dataset.l; stopSpeak(); render(); }; });
   box.querySelector('#say').onclick = function () { speak(zoneLine(zz.id, n.gate, n.delay, state.lang, true), state.lang); };
   box.querySelector('#endt').onchange = function (e) { if (e.target.value) { state.end = e.target.value; render(); } };
+  box.querySelectorAll('#hmode button').forEach(function (b) { b.onclick = function () { state.mode = b.dataset.m; render(); }; });
+  box.querySelectorAll('#wxseg button').forEach(function (b) { b.onclick = function () { state.wx = b.dataset.w; render(); }; });
   bindReward(zz, n);
 }
 // ---------- 🎁 기다림 보상 카드: 대기 구역 카운트다운 + 무대 LED 콘텐츠 + 출발 시각 쿠폰 ----------
@@ -244,14 +256,30 @@ function bindReward(zz, n) {
 }
 function homeCard(zz, n, c) {
   var tn = 4 + n.total, tc = 4 + c.total, kN = keyOf('P4', state.f), kC = keyOf('P0', state.f);
+  var head = '<div class="home"><h4><span class="hseg" id="hmode"><button data-m="subway"' + (state.mode === 'subway' ? ' class="on"' : '') + '>🚇 지하철</button><button data-m="car"' + (state.mode === 'car' ? ' class="on"' : '') + '>🚗 자가용</button></span> 귀갓길<label>공연 종료 <input type="time" id="endt" value="' + state.end + '"></label></h4>';
+  var wx = WX[state.wx];
+  var wxBox = '<div class="wxrow">오늘 날씨 <span class="hseg" id="wxseg">' + Object.keys(WX).map(function (k) { return '<button data-w="' + k + '"' + (k === state.wx ? ' class="on"' : '') + '>' + WX[k].ic + ' ' + WX[k].name + '</button>'; }).join('') + '</span></div>' +
+    (wx.aud ? '<div class="wxtip">' + wx.ic + ' ' + wx.aud + '<small>2025년 공연 ' + PARK.wx.total + '회 중 ' + wx.n + '회가 종료 시각에 ' + wx.name + (state.wx === 'rain' ? '가 왔어요' : ' 날씨였어요') + ' (기상청 시간별 관측)</small></div>' : '');
+  if (state.mode === 'car') {
+    var pk = parkAt(50), p85 = parkAt(85), stand = state.f > 0, cr = stand ? PARK.cars.standing : PARK.cars.seated;
+    var gb = PARK.gates.map(function (g, i) { var col = ['#c62f2e', '#e8833a', '#2a78d6', '#b9b8b0'][i]; return '<span style="width:' + g[1] + '%;background:' + col + (i === 3 ? ';color:#0b0b0b' : '') + '">' + (g[1] >= 15 ? g[0] + ' ' + Math.round(g[1] - 0.01) + '%' : g[1] >= 9 ? g[0] : '') + '</span>'; }).join('');
+    return head +
+      '<div class="trip"><div>건물 밖<b>' + clock(state.end, tn) + '</b>종료 후 약 ' + Math.round(tn) + '분</div>' +
+      '<div>주차장 출차 가장 붐빔<b>' + clock(state.end, 75) + '~' + clock(state.end, 90).slice(-5) + '</b>종료 75~90분 뒤</div>' +
+      '<div>공연 차 85% 빠짐<b>' + clock(state.end, p85) + '</b>종료 약 ' + p85 + '분 뒤</div></div>' +
+      '<p>공연 날엔 저녁 주차가 평소보다 <b>약 ' + fmt(cr[0]) + '~' + fmt(cr[1]) + '대</b> 더 많아요' + (stand ? '(스탠딩 공연 기준)' : '') + '. 공연 차는 종료 시각까지 거의 그대로 있다가 <b>종료 45분~2시간 뒤에 한꺼번에</b> 빠져나가요(절반이 빠지는 때 약 ' + pk + '분 뒤).</p>' +
+      '<div style="font-size:12.5px;color:var(--ink2);margin-top:10px">공연 날 늘어난 출차가 나가는 주차장 출구</div><div class="gbar">' + gb + '</div>' +
+      '<p style="margin-top:6px">→ 남2문·동2문 출구로 <b>83%</b>가 몰려요. 북2문 쪽에 주차했다면 <b>북2문 출구</b>가 덜 막혀요. 주차장에 일찍 가도 출차 줄에 서게 되니, ' + (n.delay ? '<b>🎁 기다림 보상</b>을 즐기고 안내 시각(' + clock(state.end, n.delay) + ')에 나가는 게 오히려 편해요.' : '건물에서 천천히 나와도 늦지 않아요.') + '<br>' +
+      '<span style="color:var(--ink3)">출처: 한국체육산업개발 올림픽공원 2025 입출차정보(차량별 241만 건 중 33,000건 표본, 공연 74일 vs 평소 165일)·차량입출차 연계 데이터(평일 공연 ' + PARK.cars.n + '회). 올림픽공원 전체 주차장 기준이에요.</span></p>' + wxBox + '</div>';
+  }
   var aN = stationCurve(kN, 60), aC = stationCurve(kC, 60), sN = Math.round(tn + STATION.walk), sC = Math.round(tc + STATION.walk);
   var crowdN = aN[Math.min(sN, 59)], crowdC = aC[Math.min(sC, 59)];
-  return '<div class="home"><h4>🚇 귀갓길 — 올림픽공원역 (5·9호선)<label>공연 종료 <input type="time" id="endt" value="' + state.end + '"></label></h4>' +
+  return head +
     '<div class="trip"><div>건물 밖<b>' + clock(state.end, tn) + '</b>종료 후 약 ' + Math.round(tn) + '분</div>' +
     '<div>역 도착<b>' + clock(state.end, tn + STATION.walk) + '</b>도보 약 ' + STATION.walk + '분</div>' +
     '<div>그 시각 역 도착 관객<b>' + fmt(crowdN) + '명/분</b>지금처럼이면 ' + fmt(crowdC) + '명/분</div></div>' +
-    '<p>지금처럼 나가면 ' + clock(state.end, tc + STATION.walk) + '쯤 역에 도착해요. EXIT NAVI 안내대로면 <b>' + (tc - tn >= 0.5 ? '약 ' + Math.round(tc - tn) + '분 일찍' : '비슷한 시각에') + '</b> 도착해요. ' + (crowdN > 400 ? '이 시각에는 역이 붐비니 개찰구에서 여유를 두세요.' : '') + '<br>' +
-    '<span style="color:var(--ink3)">공연 후 귀가 관객의 47%가 지하철, 버스는 1% 미만이에요. 지하철 관객의 95%가 올림픽공원역(9호선 70%, 5호선 25%)을 이용해요 (2025 승하차 데이터). 실시간 열차 도착 정보와 연동하면 탈 수 있는 열차까지 안내할 수 있어요.</span></p></div>';
+    '<p>올림픽공원역(5·9호선) 기준이에요. 지금처럼 나가면 ' + clock(state.end, tc + STATION.walk) + '쯤 역에 도착해요. EXIT NAVI 안내대로면 <b>' + (tc - tn >= 0.5 ? '약 ' + Math.round(tc - tn) + '분 일찍' : '비슷한 시각에') + '</b> 도착해요. ' + (crowdN > 400 ? '이 시각에는 역이 붐비니 개찰구에서 여유를 두세요.' : '') + '<br>' +
+    '<span style="color:var(--ink3)">공연 후 귀가 관객의 47%가 지하철, 자가용은 약 4~16%, 버스는 1% 미만이에요. 지하철 관객의 95%가 올림픽공원역(9호선 70%, 5호선 25%)을 이용해요 (2025 승하차 데이터). 차로 오셨다면 위의 🚗 자가용을 눌러 주차장 출차 예보를 보세요.</span></p>' + wxBox + '</div>';
 }
 function renderAccess(box, kN, kC) {
   var a = accessEstimate(kN, state.z), sg = a.seg, col = GATE[a.gate], clear = sc(kC).summary.clear90;
