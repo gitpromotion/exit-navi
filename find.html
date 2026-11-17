@@ -125,7 +125,7 @@ select,.seg button{font:inherit;font-size:15px;border:1px solid var(--line);back
         <select id="zsel"><option value="">구역 선택</option></select>
         <div id="floor"></div>
       </div>
-      <div class="res" id="res"><div class="empty">지도에서 내 좌석 구역을 눌러 주세요.<br><small>예: 1층 18구역, 2층 47구역</small></div></div>
+      <div class="res" id="res"><div class="empty">지도에서 내 좌석 구역을 눌러 주세요.<br><small>예: 2층 18구역, 3층 47구역</small></div></div>
     </div>
   </div>
 </div>
@@ -137,7 +137,7 @@ var state = { z: null, f: 2000, lang: 'ko', end: '21:30', mode: 'subway', wx: 'c
 function clock(base, add) { var p = base.split(':'), m = +p[0] * 60 + +p[1] + Math.round(add); m = (m + 1440) % 1440; return String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0'); }
 var sel = document.getElementById('zsel');
 ACCESS.segs.forEach(function (g) { var o = document.createElement('option'); o.value = g.id; o.textContent = '♿ ' + g.label; sel.appendChild(o); });
-Z.forEach(function (z) { var o = document.createElement('option'); o.value = z.id; o.textContent = (z.ring ? '2층 ' : '1층 ') + z.id + '구역'; sel.appendChild(o); });
+Z.forEach(function (z) { var o = document.createElement('option'); o.value = z.id; o.textContent = (z.ring ? '3층 ' : '2층 ') + z.id + '구역'; sel.appendChild(o); });
 sel.onchange = function () { pick(!sel.value ? null : (sel.value.charAt(0) === 'W' ? sel.value : +sel.value)); };
 floorControl(document.getElementById('floor'), state.f, function (v) { state.f = v; render(); });
 function toResult() { if (window.innerWidth <= 900) { var r = document.getElementById('res'); if (r) r.scrollIntoView({ behavior: 'smooth', block: 'start' }); } }
@@ -147,7 +147,7 @@ function render() {
   var kN = keyOf('P4', state.f), kC = keyOf('P0', state.f);
   drawMap(document.getElementById('map'), { key: kN, selected: state.z, onPick: pick, showDelay: true });
   var box = document.getElementById('res');
-  if (!state.z) { clearInterval(RW.timer); RW.timer = null; box.innerHTML = '<div class="empty">지도에서 내 좌석 구역을 눌러 주세요.<br><small>예: 1층 18구역, 2층 47구역</small></div>'; return; }
+  if (!state.z) { clearInterval(RW.timer); RW.timer = null; box.innerHTML = '<div class="empty">지도에서 내 좌석 구역을 눌러 주세요.<br><small>예: 2층 18구역, 3층 47구역</small></div>'; return; }
   if (typeof state.z === 'string') { clearInterval(RW.timer); RW.timer = null; renderAccess(box, kN, kC); return; }
   var zz = Z.filter(function (z) { return z.id === state.z; })[0];
   var n = estimate(kN, state.z), c = estimate(kC, state.z), col = GATE[n.gate];
@@ -161,7 +161,7 @@ function render() {
   var when = n.delay ? '공연 종료 ' + n.delay + '분 뒤 출발' : '공연 종료 직후 바로 출발';
   var changed = n.door !== c.door;
   box.innerHTML =
-    '<div class="zone">' + (zz.ring ? '2층' : '1층') + ' ' + zz.id + '구역 · 좌석 ' + zz.seats + '석</div>' +
+    '<div class="zone">' + (zz.ring ? '3층' : '2층') + ' ' + zz.id + '구역 · 좌석 ' + zz.seats + '석</div>' +
     '<div class="exit" style="color:' + col + '">' + n.gate + ' <span style="color:var(--ink)">' + doorName(n.door) + '</span></div>' +
     '<div class="when" style="background:' + mix(col, 0.85) + ';color:' + col + '">' + when + '</div>' +
     '<div class="rows">' +
@@ -301,7 +301,7 @@ var m = location.hash.match(/z=(W[123]|\d+)/); if (m) { if (m[1].charAt(0) === '
 sel.value = state.z || ''; render(); if (state.z) setTimeout(toResult, 300);
 </script>
 <script src="js/nav.js"></script>
-<script src="js/tour.js?v=3"></script>
+<script src="js/tour.js?v=4"></script>
 <script src="js/pwa.js"></script>
 </body>
 </html>
