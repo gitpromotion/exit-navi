@@ -110,8 +110,7 @@ select.emg{border-color:#e34948;color:#8f1d1c;font-weight:700;background:#fdecec
     <h2 class="t" style="margin-bottom:6px">운영자 안내 방송판</h2>
     <p class="lead" style="margin-bottom:14px">오늘 관객 조건을 고르면 공연 종료 후 시간 순서대로 읽을 방송 문구와 출구별 예상 혼잡을 보여 줍니다. 출구 하나가 막히면 <b>비상 모드</b>로 즉시 재배정합니다.</p>
     <div class="ctrl">
-      <div class="g"><label>플로어 관객</label>
-        <div class="seg" id="floor"><button data-f="0">없음</button><button data-f="2000" class="on">2,000명</button><button data-f="4000">4,000명</button></div></div>
+      <div class="g" id="floor"></div>
       <div class="g"><label for="closed">🚨 비상 모드 (출구 폐쇄)</label><select id="closed"><option value="">평상시 — 폐쇄 없음</option></select></div>
       <div class="g"><label>방송 언어</label><div class="seg" id="lang"></div></div>
     </div>
@@ -162,18 +161,16 @@ select.emg{border-color:#e34948;color:#8f1d1c;font-weight:700;background:#fdecec
   <div class="rows" id="bRows"></div>
   <div class="bf">초록 = 지금 출발 · 노랑 = 1분 안에 출발 · 빨강 = 자리에서 대기 · 출발 시각은 시뮬레이션 최적 계획(현재 조건) 기준</div>
 </div>
-<script src="js/data2.js"></script>
-<script src="js/data_emg.js"></script>
-<script src="js/common.js?v=4"></script>
+<script src="js/data2.js?v=2"></script>
+<script src="js/data_emg.js?v=2"></script>
+<script src="js/common.js?v=5"></script>
 <script>
 var f = 2000, closedId = '', lang = 'ko', E = window.KSPO_EMG;
 var langBox = document.getElementById('lang');
 Object.keys(LANGS).forEach(function (k) { var b = document.createElement('button'); b.textContent = LANGS[k].name; b.dataset.l = k; if (k === lang) b.className = 'on'; langBox.appendChild(b); });
 langBox.querySelectorAll('button').forEach(function (b) { b.onclick = function () { lang = b.dataset.l; langBox.querySelectorAll('button').forEach(function (x) { x.classList.toggle('on', x === b); }); stopSpeak(); render(); }; });
-document.querySelectorAll('#floor button').forEach(function (b) {
-  b.onclick = function () { f = +b.dataset.f; document.querySelectorAll('#floor button').forEach(function (x) { x.classList.toggle('on', x === b); }); render(); };
-});
-(function () { var q = location.search.match(/[?&]f=(0|2000|4000)\b/); if (q) { f = +q[1]; document.querySelectorAll('#floor button').forEach(function (x) { x.classList.toggle('on', +x.dataset.f === f); }); } })();
+var FC_ = floorControl(document.getElementById('floor'), f, function (v) { f = v; render(); });
+(function () { var q = location.search.match(/[?&]f=(\d+)/); if (q && FLOORS.indexOf(+q[1]) >= 0) { f = +q[1]; FC_.set(f, false); } })();
 var sel = document.getElementById('closed');
 DOORS.forEach(function (d) { var o = document.createElement('option'); o.value = d.id; o.textContent = d.gate + ' ' + doorName(d.id) + ' 폐쇄'; sel.appendChild(o); });
 sel.onchange = function () { closedId = sel.value; stopSpeak(); render(); };
@@ -195,7 +192,7 @@ document.getElementById('playAll').onclick = function () { speak(lines(true), la
 
 function render() {
   var kN = keyOf('P4', f), kC = keyOf('P0', f), cur, plan, mapS;
-  if (closedId) { var e = E[f][closedId]; cur = e.naive; plan = e.plan; mapS = e.plan; }
+  if (closedId) { var Ef = E[f] || E[[0, 2000, 4000].reduce(function (b, x) { return Math.abs(x - f) < Math.abs(b - f) ? x : b; }, 0)]; var e = Ef[closedId]; cur = e.naive; plan = e.plan; mapS = e.plan; }
   else { cur = sc(kC); plan = sc(kN); mapS = sc(kN); }
   var C = cur.summary, N = plan.summary, cl = closedId ? '각자 가까운 열린 출구로' : '지금처럼';
   sel.classList.toggle('emg', !!closedId);
