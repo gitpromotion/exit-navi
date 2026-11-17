@@ -2,10 +2,19 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0b0b0b">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="EXIT NAVI">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+
 <title>데이터·방법 · EXIT NAVI</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
-<link rel="stylesheet" href="css/site.css">
+<link rel="stylesheet" href="css/site.css?v=2">
 <style>
 .toc{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
 .toc a{font-size:14px;text-decoration:none;border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 12px}
@@ -128,6 +137,7 @@
         <li>즉 <b>60%가 안전의 문턱</b>입니다. 기다리는 구역에 실감형 콘텐츠(무대 LED 앵콜 비하인드·포토타임)와 혜택(굿즈·주변 상권 할인)을 주어 이 문턱을 넘깁니다.</li>
         <li><b>기다림 보상 카드:</b> 내 출구 찾기에서 대기 구역(예: 16구역, 4분 뒤 출발)을 고르면 출발까지 카운트다운, 그 시간대의 무대 LED 프로그램(커튼콜 → 포토타임 → 앵콜 비하인드), 출발 시각에 열리는 쿠폰이 나옵니다. "지금 나갈래요"를 누르면 구역 관객이 다 같이 일찍 나갈 때의 줄(지금처럼)과 비교해 보여 줍니다.</li>
         <li><b>전광판 모드:</b> 운영자 안내의 계획을 그대로 대형 스크린용 신호등(대기·곧 출발·지금 출발)과 카운트다운으로 보여 주고, 출발 시각에 자동 방송합니다. 비상 모드도 그대로 반영됩니다.</li>
+        <li><b>앱 설치(PWA)·휴대폰 화면:</b> 홈의 "📱 앱으로 설치"로 휴대폰 홈 화면에 아이콘을 추가하면 주소창 없이 앱처럼 열립니다. 한 번 열어 둔 화면은 저장되어, 공연장처럼 인터넷이 잘 안 되는 곳에서도 내 출구 안내가 열립니다. 3D 시뮬레이션도 휴대폰에서 두 화면을 위아래로 보여 주고, 두 손가락으로 확대할 수 있습니다.</li>
         <li><b>좌석 QR:</b> 52개 구역 + 장애인석 3곳, 총 55개 QR. 찍으면 <code>find.html#z=구역</code>이 열려 입력 없이 내 출구 안내가 나옵니다.</li></ul></div>
       <div class="note" style="font-size:14px">결과 파일: out/S12-1_순응률별_효과.csv · 3D 시뮬레이션 분석 모드에서 곡선으로 볼 수 있습니다. 순응률 70%와 100%의 최대 줄이 비슷한(193명·211명) 이유는, 따르지 않는 관객이 가까운 출구로 흩어지면서 최적 계획의 빈자리를 메우기 때문입니다.</div>
     </div>
@@ -176,6 +186,7 @@
   </div>
 </section>
 <script src="js/nav.js"></script>
-<script src="js/tour.js?v=1"></script>
+<script src="js/tour.js?v=2"></script>
+<script src="js/pwa.js"></script>
 </body>
 </html>

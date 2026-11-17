@@ -95,3 +95,11 @@ table.t tr.best td{font-weight:700;background:#f2f8ff}
 footer{background:#0b0b0b;color:#8a8983;font-size:13px;padding:40px 0;border-top:1px solid #2a2927}
 footer b{color:#fff}
 footer .row{display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px}
+
+/* 휴대폰 화면 보정 */
+@media(max-width:600px){
+table.t{font-size:13px;display:block;overflow-x:auto;-webkit-overflow-scrolling:touch;white-space:normal}
+table.t th,table.t td{padding:8px 10px;min-width:72px}
+table.t td:first-child,table.t th:first-child{min-width:46px}
+.wrap{padding-left:16px;padding-right:16px}
+}

@@ -2,10 +2,19 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0b0b0b">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="EXIT NAVI">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+
 <title>운영자 안내 방송판 · EXIT NAVI</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
-<link rel="stylesheet" href="css/site.css">
+<link rel="stylesheet" href="css/site.css?v=2">
 <style>
 .app{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:22px;align-items:start;padding:20px 0 30px}
 .panel{background:#fff;border:1px solid var(--line);border-radius:18px;padding:20px}
@@ -90,6 +99,7 @@ select.emg{border-color:#e34948;color:#8f1d1c;font-weight:700;background:#fdecec
 #board .zz .ledn{display:inline-block;margin-top:6px;font-size:14px;font-weight:500;color:#f3d48a;background:#2a2412;border:1px solid #4d4020;border-radius:8px;padding:3px 10px}
 #board .bf{margin-top:auto;padding-top:14px;font-size:13px;color:#7d8390}
 @media(max-width:760px){#board .br{grid-template-columns:1fr}#board .clock{font-size:34px}}
+@media(max-width:600px){#board{padding:14px 12px}#board .bh .ttl{font-size:17px}#board .clock{font-size:30px}#board .bc button{font-size:12.5px;padding:6px 9px}#board .br{padding:10px 12px;gap:8px}#board .lamp{width:32px;height:32px}#board .st b{font-size:20px}#board .zz{font-size:18px}#board .zz .gt{font-size:13px;padding:0 7px}#board .zz .sub{font-size:12px}#board .zz .ledn{font-size:12px}#board .bemg{font-size:15px}}
 @media(max-width:960px){.app{grid-template-columns:1fr}.summary{grid-template-columns:repeat(2,1fr)}.stat2{grid-template-columns:1fr}}
 </style>
 </head>
@@ -329,6 +339,7 @@ document.getElementById('bVoice').onclick = function () { BD.voice = !BD.voice; 
 document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && document.getElementById('board').classList.contains('on')) closeBoard(); });
 </script>
 <script src="js/nav.js"></script>
-<script src="js/tour.js?v=1"></script>
+<script src="js/tour.js?v=2"></script>
+<script src="js/pwa.js"></script>
 </body>
 </html>
