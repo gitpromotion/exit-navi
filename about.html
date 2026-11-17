@@ -24,6 +24,10 @@
 .step ul{padding-left:18px;margin:8px 0}
 .step .k{font-size:12px;font-weight:700;color:var(--ink3);letter-spacing:.08em}
 @media(max-width:860px){.step{grid-template-columns:1fr}}
+#data .pill{white-space:nowrap;padding:3px 10px}
+#data .pill:not(.org){background:#fff;border:1px solid #c9c8c0;color:#3d3c39}
+#data td:first-child{width:1%;white-space:nowrap}
+@media(min-width:861px){#data td:nth-child(3){white-space:nowrap}}
 </style>
 </head>
 <body>
@@ -55,7 +59,7 @@
       </tbody>
     </table>
     </div>
-    <p class="note" style="margin-top:14px">모든 데이터는 2025년 기준이며, 정리한 결과는 테이블 14개(PostgreSQL)로 저장해 기관 시스템에 그대로 옮길 수 있게 했습니다.</p>
+    <p class="note" style="margin-top:14px">모든 데이터는 2025년 기준이며, 정리한 결과는 테이블 32개(PostgreSQL)로 저장해 기관 시스템에 그대로 옮길 수 있게 했습니다.</p>
   </div>
 </section>
 
