@@ -32,7 +32,19 @@ select,.seg button{font:inherit;font-size:15px;border:1px solid var(--line);back
 .seg button{border:0;background:transparent;font-size:14px;padding:6px 12px;cursor:pointer}
 .seg button.on{background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.12);font-weight:700}
 .res{background:#fff;border:1px solid var(--line);border-radius:18px;padding:24px}
-.res .empty{color:var(--ink2);text-align:center;padding:40px 10px}
+.res .empty{color:var(--ink2);padding:4px 2px}
+.empty h3{margin:0 0 6px;font-size:20px;color:var(--ink)}
+.empty .how{font-size:14px;line-height:1.7;margin:0}
+.empty .try{margin:18px 0 6px;font-size:12.5px;font-weight:700;color:var(--ink3);letter-spacing:.04em}
+.empty .chips{display:flex;flex-wrap:wrap;gap:8px}
+.empty .chips button{font:inherit;font-size:14px;border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 14px;cursor:pointer;color:var(--ink)}
+.empty .chips button:hover{border-color:var(--ink)}
+.empty .chips button small{color:var(--ink3);margin-left:4px;font-size:12px}
+.empty .feat{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px}
+.empty .feat div{background:var(--soft);border-radius:12px;padding:12px 14px;font-size:13px;line-height:1.6}
+.empty .feat b{display:block;font-size:14.5px;color:var(--ink);margin-bottom:2px}
+.empty .ft{font-size:12px;color:var(--ink3);margin-top:14px}
+@media(max-width:520px){.empty .feat{grid-template-columns:1fr}}
 .res .zone{font-size:14px;color:var(--ink2);font-weight:700}
 .res .exit{font-size:clamp(34px,4vw,46px);font-weight:900;letter-spacing:-1px;line-height:1.15;margin:4px 0 2px}
 .res .when{display:inline-block;margin-top:8px;padding:6px 12px;border-radius:999px;font-weight:700;font-size:15px}
@@ -125,7 +137,7 @@ select,.seg button{font:inherit;font-size:15px;border:1px solid var(--line);back
         <select id="zsel"><option value="">구역 선택</option></select>
         <div id="floor"></div>
       </div>
-      <div class="res" id="res"><div class="empty">지도에서 내 좌석 구역을 눌러 주세요.<br><small>예: 2층 18구역, 3층 47구역</small></div></div>
+      <div class="res" id="res"></div>
     </div>
   </div>
 </div>
@@ -143,11 +155,24 @@ floorControl(document.getElementById('floor'), state.f, function (v) { state.f =
 function toResult() { if (window.innerWidth <= 900) { var r = document.getElementById('res'); if (r) r.scrollIntoView({ behavior: 'smooth', block: 'start' }); } }
 function pick(z) { state.z = z; sel.value = z || ''; if (z) history.replaceState(null, '', location.search + '#z=' + z); render(); if (z) toResult(); }
 
+function emptyHTML() {
+  return '<div class="empty"><h3>내 좌석 구역을 골라 주세요</h3>' +
+    '<p class="how">왼쪽 지도에서 내 구역을 누르거나, 위 <b>내 구역</b> 목록에서 고르세요. 티켓에 적힌 구역 번호(예: 2층 18구역, 3층 47구역)를 찾으면 돼요. 공연장 좌석의 <b>QR</b>을 찍으면 바로 열려요.</p>' +
+    '<div class="try">예시로 바로 보기</div><div class="chips">' +
+      [18, 16, 33, 47].map(function (z) { var d = estimate(keyOf('P4', state.f), z).delay; return '<button data-z="' + z + '">' + (z <= 22 ? '2층 ' : '3층 ') + z + '구역<small>' + (d ? (d >= 4 ? '🎁 ' : '') + d + '분 뒤 출발' : '바로 출발') + '</small></button>'; }).join('') +
+      '<button data-z="W2">♿ 장애인석<small>우선 퇴장</small></button></div>' +
+    '<div class="try">고르면 이런 걸 알려 드려요</div><div class="feat">' +
+      '<div><b>🚪 나갈 출구와 출발 시각</b>지금처럼 나갈 때와 비교해 줄과 대기 시간이 얼마나 줄어드는지</div>' +
+      '<div><b>🔊 4개 언어 안내 방송</b>한국어·영어·일본어·중국어 문구와 음성</div>' +
+      '<div><b>🎁 기다림 보상</b>기다리는 구역은 무대 LED 콘텐츠와 출발 시각 쿠폰</div>' +
+      '<div><b>🚇 🚗 귀갓길</b>올림픽공원역 도착 시각, 자가용이면 주차장 출차 예보, 날씨 안내</div></div>' +
+    '<div class="ft">시간과 줄 인원은 실제 공공데이터를 바탕으로 한 퇴장 시뮬레이션 결과예요.</div></div>';
+}
 function render() {
   var kN = keyOf('P4', state.f), kC = keyOf('P0', state.f);
   drawMap(document.getElementById('map'), { key: kN, selected: state.z, onPick: pick, showDelay: true });
   var box = document.getElementById('res');
-  if (!state.z) { clearInterval(RW.timer); RW.timer = null; box.innerHTML = '<div class="empty">지도에서 내 좌석 구역을 눌러 주세요.<br><small>예: 2층 18구역, 3층 47구역</small></div>'; return; }
+  if (!state.z) { clearInterval(RW.timer); RW.timer = null; box.innerHTML = emptyHTML(); box.querySelectorAll('[data-z]').forEach(function (b) { b.onclick = function () { var v = b.dataset.z; pick(v.charAt(0) === 'W' ? v : +v); }; }); return; }
   if (typeof state.z === 'string') { clearInterval(RW.timer); RW.timer = null; renderAccess(box, kN, kC); return; }
   var zz = Z.filter(function (z) { return z.id === state.z; })[0];
   var n = estimate(kN, state.z), c = estimate(kC, state.z), col = GATE[n.gate];
