@@ -306,7 +306,7 @@ const STEPS=[
  {key:'P4_2000_100',t:[0,0],tag:'최적 계획',sub:'구역별 출구 안내 + 2~4분 시차',routes:true,flow:false,pitch:1.45,yaw:0,zoom:1.0},
  {key:'P4_2000_100',t:[0,9],tag:'최적 계획',sub:'같은 15,948명, 같은 9개 출구',flow:true,pitch:0.98,yaw:0,zoom:1.0,ann:true},
  {key:'P4_2000_70',t:[0,9],tag:'최적 계획 · 70%만 따를 때',sub:'회색 점 = 안내를 따르지 않은 관객',flow:true,pitch:0.98,yaw:0,zoom:1.0},
- {key:'P4_2000_100',t:[0,3],tag:'최적 계획 · 안내 방송',sub:'종료 직후 · 2분 뒤 · 4분 뒤',flow:true,pitch:1.05,yaw:0.3,zoom:1.0,ann:true},
+ {key:'P4_2000_100',t:[0,5],tag:'최적 계획 · 안내 방송',sub:'종료 직후 · 2분 뒤 · 4분 뒤',flow:true,pitch:1.05,yaw:0.3,zoom:1.0,ann:true},
 ];
 let cur=-1,tNow=0,anim=null,spinT=0;
 function lerp(a,b,f){return a+(b-a)*f;}
@@ -314,17 +314,18 @@ function setStep(i){if(i===cur)return;cur=i;const s=STEPS[i];view.key=s.key;view
   document.getElementById('vis').classList.toggle('dark',!!s.dim);
   const c0={...camS},t0=s.t[0],t1=s.t[1],start=performance.now(),camDur=900,tDur=Math.max(0,(t1-t0))*900;
   if(anim)cancelAnimationFrame(anim);
-  const step=now=>{const e=now-start,f=Math.min(1,e/camDur),ease=1-Math.pow(1-f,3);
+  const step=now=>{const e=Math.max(0,now-start),f=Math.min(1,e/camDur),ease=1-Math.pow(1-f,3);
     camS.pitch=lerp(c0.pitch,s.pitch,ease);camS.zoom=lerp(c0.zoom,s.zoom,ease);if(!s.spin)camS.yaw=lerp(c0.yaw,s.yaw,ease);
     if(s.spin){spinT+=0.004;camS.yaw=s.yaw+Math.sin(spinT)*0.6;}
-    tNow=tDur>0?lerp(t0,t1,Math.min(1,e/tDur)):t0;render();
-    if(e<Math.max(camDur,tDur)||s.spin)anim=requestAnimationFrame(step);};
+    const hold=1800,cyc=tDur+hold,le=tDur>0?e%cyc:0; // 끝까지 재생 → 1.8초 멈춤 → 처음부터 반복
+    tNow=tDur>0?lerp(t0,t1,Math.min(1,le/tDur)):t0;render();
+    if(e<camDur||tDur>0||s.spin)anim=requestAnimationFrame(step);};
   anim=requestAnimationFrame(step);
   document.querySelectorAll('.step').forEach((el,k)=>el.classList.toggle('active',k===i));}
 function render(){const s=STEPS[cur]||STEPS[0];view.draw(tNow);
   document.getElementById('vtag').innerHTML=`${s.tag}<small>${s.sub}</small>`;
   const [wi,wq]=maxQ(view.key,tNow),ex=cumOut(view.key,undefined,tNow),tot=sc(view.key).summary.total;
-  document.getElementById('vstat').innerHTML=tNow>0.05?`가장 긴 줄 <b style="color:${losColor(wq)}">${fmt(wq)}명</b><br>나간 사람 ${Math.round(ex/tot*100)}%`:'';
+  document.getElementById('vstat').innerHTML=tNow>0.05?`가장 긴 줄 <b style="color:${losColor(wq)}">${fmt(wq)}명</b><br>나간 사람 ${Math.round(ex/tot*100)}%<br><span style="font-size:11px;opacity:.7">공연 후 처음 ${s.t[1]}분 장면 반복</span>`:'';
   document.getElementById('vclock').textContent=tNow>0.05?`공연 끝난 뒤 ${Math.floor(tNow)}분 ${String(Math.round((tNow%1)*60)).padStart(2,'0')}초`:'';
   let msg='';if(s.warn)msg+=warnings(view.key,tNow).slice(0,1).map(w=>`<div class="warn">${w.html}</div>`).join('');
   if(s.ann){const a=announcements(view.key).filter(x=>tNow>=x.t&&tNow<x.t+2.2).slice(-1);msg+=a.map(x=>`<div class="ann">📢 ${x.text}</div>`).join('');}
