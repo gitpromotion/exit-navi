@@ -137,7 +137,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:'Noto Sans KR',s
       <h2>관객이 안내를 다 따르지 않는다면?</h2>
       <p>안내를 따르지 않는 관객(회색 점)은 가장 가까운 출구로 간다고 가정했습니다.</p>
       <div class="chart" id="chComp"></div>
-      <p>절반만 따라도 줄은 절반. 그리고 <b>준수율 70%를 미리 감안해 계획을 짜면</b>, 100%가 따를 때와 같은 결과(최대 193명, D등급)가 나옵니다.</p>
+      <p>절반만 따라도 최대 줄은 4분의 1(576명), 60%부터는 위험 등급이 사라집니다. 그리고 <b>준수율 70%를 미리 감안해 계획을 짜면</b>, 100%가 따를 때와 같은 결과(최대 193명, D등급)가 나옵니다.</p>
     </div>
     <div class="step" data-s="9">
       <div class="k">현장 실행</div>
@@ -338,7 +338,7 @@ function bars(el,items,opt){const W=480,H=(opt.h||150)+14,L=opt.l||8,T=40,B=26,m
       <text x="${x+w/2}" y="${H-8}" font-size="11" text-anchor="middle" fill="#52514e">${d.x}</text>`;});
   el.innerHTML=s+'</svg>';}
 bars(document.getElementById('chHour'),[{x:'종료 1시간 전',v:8,lab:'8%',c:'#c3c2b7'},{x:'종료 시간대',v:18,lab:'18%',c:'#86b6ef'},{x:'종료 후 1시간대',v:58,lab:'58%',c:'#2a78d6'},{x:'종료 후 2시간대',v:16,lab:'16%',c:'#86b6ef'}],{title:'공연 후 지하철 초과 승차가 몰리는 시간대 (하반기 57회 평균)'});
-const comp=[0,25,50,70,90,100].map(c=>({x:c+'%',v:{0:2292,25:1710,50:1137,70:688,90:253,100:211}[c]}));comp.forEach(d=>{d.c=losColor(d.v);d.lab=fmt(d.v);});
+const comp=[0,30,50,60,70,100].map(c=>({x:c+'%',v:{0:2292,30:1216,50:576,60:299,70:193,100:211}[c]})); // out/S12-1 순응률별 효과comp.forEach(d=>{d.c=losColor(d.v);d.lab=fmt(d.v);});
 bars(document.getElementById('chComp'),comp,{title:'안내를 따르는 비율별 한 출구 최대 줄 (명)',h:160});
 document.getElementById('annText').innerHTML=announcements('P4_2000_100').map(a=>'📢 '+a.text).join('<br>');
 // 스크롤 감지
@@ -349,6 +349,6 @@ setStep(0);rs();
 window.__s={setStep};
 })();
 </script>
-<script src="js/pwa.js"></script>
+<script src="js/pwa.js?v=2"></script>
 </body>
 </html>
